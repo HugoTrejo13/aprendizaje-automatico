@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-K = 3
+K = 6
 ITERACIONES = 100
 rng = np.random.default_rng(42)
 
