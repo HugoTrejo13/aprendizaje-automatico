@@ -1,0 +1,1392 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Máquinas de Vectores de Soporte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --surface-2: #f3f1ec;
+  --ink: #1b2130;
+  --muted: #5a6273;
+  --line: #e3e0d8;
+  --blue: #2563eb;
+  --orange: #dd5a12;
+  --band: #e6e3f0;
+  --accent: #0d9488;
+  --stripe: #f0b800;
+  --good: #15803d;
+  --bad: #b91c1c;
+  --code-bg: #1b2130;
+  --code-ink: #e8eaf0;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11141b;
+    --surface: #181d27;
+    --surface-2: #202634;
+    --ink: #e9ebf1;
+    --muted: #9aa3b6;
+    --line: #2b3241;
+    --blue: #6b9dff;
+    --orange: #ff8a4a;
+    --band: #2b3142;
+    --accent: #2dd4bf;
+    --stripe: #ffd23f;
+    --good: #4ade80;
+    --bad: #f87171;
+    --code-bg: #0b0e14;
+    --code-ink: #e8eaf0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11141b;
+  --surface: #181d27;
+  --surface-2: #202634;
+  --ink: #e9ebf1;
+  --muted: #9aa3b6;
+  --line: #2b3241;
+  --blue: #6b9dff;
+  --orange: #ff8a4a;
+  --band: #2b3142;
+  --accent: #2dd4bf;
+  --stripe: #ffd23f;
+  --good: #4ade80;
+  --bad: #f87171;
+  --code-bg: #0b0e14;
+  --code-ink: #e8eaf0;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 19px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 {
+  font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", system-ui, sans-serif;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.5em;
+}
+h1 { font-size: clamp(2.3rem, 6vw, 4rem); font-weight: 800; }
+h2 { font-size: clamp(1.7rem, 3.6vw, 2.4rem); font-weight: 800; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+p { margin: 0 0 1em; }
+code, pre { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.86em; }
+:not(pre) > code { background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 5px; }
+
+/* Navegación */
+nav.top {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+nav.top ol {
+  list-style: none; margin: 0 auto; padding: 0 16px;
+  max-width: 1080px; display: flex; gap: 4px;
+  overflow-x: auto; scrollbar-width: none;
+}
+nav.top ol::-webkit-scrollbar { display: none; }
+nav.top a {
+  display: block; white-space: nowrap; padding: 14px 10px;
+  color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 700;
+  border-bottom: 3px solid transparent;
+}
+nav.top a:hover, nav.top a.on { color: var(--ink); border-bottom-color: var(--stripe); }
+
+/* Estructura */
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+section { padding: 72px 0 40px; }
+.kicker {
+  display: block; margin-bottom: 10px;
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted);
+}
+.voz { font-size: 1.2rem; line-height: 1.65; max-width: 44em; }
+.voz.q { border-left: 4px solid var(--stripe); padding-left: 18px; }
+.lead { font-size: 1.1rem; color: var(--muted); max-width: 46em; }
+
+.hero { padding: 60px 0 28px; }
+.hero .sub { font-size: clamp(1.25rem, 2.6vw, 1.6rem); color: var(--muted); max-width: 32em; }
+.hero-art { margin-top: 26px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.hero-art svg { width: 100%; height: auto; display: block; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 820px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+/* Leyendas */
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 0.88rem; color: var(--muted); margin: 10px 4px 0; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.tri { width: 14px; height: 13px; background: var(--blue); clip-path: polygon(50% 0, 100% 100%, 0 100%); display: inline-block; }
+.sq { width: 12px; height: 12px; background: var(--orange); display: inline-block; }
+.ln { width: 22px; height: 3px; background: var(--ink); display: inline-block; border-radius: 2px; }
+.dl { width: 22px; height: 3px; background: var(--accent); display: inline-block; border-radius: 2px; }
+.mg { width: 22px; height: 12px; background: var(--band); display: inline-block; border-top: 2px dashed var(--muted); border-bottom: 2px dashed var(--muted); }
+.ring { width: 14px; height: 14px; border: 2px solid var(--ink); border-radius: 50%; display: inline-block; }
+
+/* Lienzos */
+.plot { width: 100%; display: block; touch-action: manipulation; }
+.plot-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px; }
+
+/* Historia paso a paso */
+.story { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 24px; align-items: start; margin-top: 20px; }
+@media (max-width: 860px) { .story { grid-template-columns: 1fr; } }
+.story:focus { outline: none; }
+.story:focus-visible { outline: 3px solid var(--stripe); outline-offset: 6px; border-radius: 16px; }
+.st-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.st-bar button { min-width: 56px; font-size: 1.15rem; }
+.dots { display: flex; gap: 7px; margin: 14px 0 4px; }
+.dots button { width: 13px; height: 13px; padding: 0; border-radius: 50%; background: var(--line); border: 0; }
+.dots button.on { background: var(--ink); }
+.cap { font-size: clamp(1.15rem, 1.9vw, 1.4rem); line-height: 1.55; margin: 14px 0 0; border-left: 4px solid var(--stripe); padding-left: 16px; }
+#cv-story { cursor: pointer; }
+
+/* Controles */
+.controls { display: grid; gap: 14px; }
+.ctl label, .ctl .lbl { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.95rem; }
+.ctl output { font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--ink); height: 28px; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+button {
+  font: inherit; font-size: 0.92rem; font-weight: 700; cursor: pointer;
+  padding: 9px 14px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink);
+}
+button:hover { border-color: var(--muted); }
+button:disabled { opacity: 0.4; cursor: default; }
+button.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--stripe); outline-offset: 2px; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; }
+.seg button + button { border-left: 1px solid var(--line); }
+
+.readout { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 12px; }
+.stat { background: var(--surface-2); border-radius: 12px; padding: 10px 14px; }
+.stat .k { font-size: 0.76rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat .v { font-family: "Bricolage Grotesque", sans-serif; font-size: 1.5rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+.side { margin-top: 12px; }
+.side .lbl { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.92rem; }
+.side output { font-variant-numeric: tabular-nums; }
+.bar { position: relative; height: 14px; background: var(--surface-2); border-radius: 99px; margin-top: 5px; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 99px; transition: width .2s; }
+.bar i.t { background: var(--blue); }
+.bar i.s { background: var(--orange); }
+.bar b { position: absolute; left: 62.5%; top: -5px; bottom: -5px; width: 3px; background: var(--ink); border-radius: 2px; }
+
+.msg { margin-top: 14px; padding: 12px 16px; border-radius: 12px; background: var(--surface-2); font-weight: 700; }
+.msg.good { color: var(--good); }
+.msg.bad { color: var(--bad); }
+
+/* SVM letras */
+.svm-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 640px; margin: 8px 0 18px; }
+.tile { text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 8px; }
+.tile .L { font-family: "Bricolage Grotesque", sans-serif; font-size: 2.8rem; font-weight: 800; line-height: 1; }
+.tile .en { color: var(--muted); font-size: 0.95rem; margin-top: 6px; }
+.tile .es { font-weight: 700; }
+.mini svg { width: 100%; height: auto; display: block; margin-bottom: 10px; }
+
+/* Tabla de términos */
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.formal td:last-child { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 1.1rem; }
+.formal small { display: block; font-family: "Atkinson Hyperlegible", system-ui, sans-serif; font-weight: 400; font-size: 0.84rem; color: var(--muted); margin-top: 2px; }
+
+/* Código */
+pre.code {
+  background: var(--code-bg); color: var(--code-ink); border-radius: 14px;
+  padding: 18px 20px; overflow-x: auto; line-height: 1.55; margin: 0; font-size: 0.8em;
+}
+pre.code .c { color: #8b95a8; }
+pre.code .k { color: #ffb86b; }
+pre.code .s { color: #9be29b; }
+.codewalk { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-top: 26px; }
+@media (max-width: 860px) { .codewalk { grid-template-columns: 1fr; } }
+.steps { counter-reset: st; list-style: none; padding: 0; margin: 0; }
+.steps li { counter-increment: st; position: relative; padding: 0 0 14px 44px; }
+.steps li::before {
+  content: counter(st); position: absolute; left: 0; top: 0;
+  width: 30px; height: 30px; border-radius: 50%; background: var(--stripe); color: #1b2130;
+  font-weight: 800; display: grid; place-items: center; font-size: 0.9rem;
+}
+
+/* Préstamo */
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form label { font-weight: 700; font-size: 0.92rem; display: block; margin-bottom: 4px; }
+.form input {
+  width: 100%; font: inherit; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+}
+.verdict { margin-top: 14px; padding: 18px; border-radius: 14px; background: var(--surface-2); }
+.verdict .big { font-family: "Bricolage Grotesque", sans-serif; font-size: 1.9rem; font-weight: 800; }
+.verdict .big.a { color: var(--blue); }
+.verdict .big.r { color: var(--orange); }
+.verdict .warn { font-size: 0.86rem; color: var(--muted); margin-top: 6px; }
+.calc { font-family: ui-monospace, Menlo, monospace; font-size: 0.85rem; color: var(--muted); margin-top: 8px; overflow-wrap: anywhere; }
+
+/* Conclusión */
+.pc { list-style: none; padding: 0; margin: 0; }
+.pc li { padding: 5px 0 5px 30px; position: relative; }
+.pc li::before { position: absolute; left: 0; top: 5px; font-weight: 800; }
+.pc.pro li::before { content: "✓"; color: var(--good); }
+.pc.con li::before { content: "✗"; color: var(--bad); }
+#conclusion { padding-bottom: 96px; }
+
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  section { padding: 56px 0 28px; }
+  .card { padding: 16px; }
+  .form { grid-template-columns: 1fr; }
+  .voz { font-size: 1.1rem; }
+  .tile .L { font-size: 2.2rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .bar i { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<nav class="top" aria-label="Secciones">
+  <ol>
+    <li><a href="#inicio">Inicio</a></li>
+    <li><a href="#triangulos">1 · Triángulos y cuadrados</a></li>
+    <li><a href="#svm">2 · ¿Qué es SVM?</a></li>
+    <li><a href="#lineas">3 · Muchas líneas</a></li>
+    <li><a href="#mejor">4 · La mejor línea</a></li>
+    <li><a href="#c">5 · Parámetro C</a></li>
+    <li><a href="#prestamo">6 · Préstamo</a></li>
+    <li><a href="#conclusion">Conclusión</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<!-- ================= INICIO ================= -->
+<header class="hero wrap" id="inicio">
+  <span class="kicker">Aprendizaje automático · 03</span>
+  <h1>Máquinas de Vectores de Soporte</h1>
+  <p class="sub">La mejor línea que separa a dos grupos o clases.</p>
+  <div class="hero-art" aria-hidden="true"><svg id="hero-svg" viewBox="0 0 1000 260"></svg></div>
+  <div class="legend">
+    <span><i class="tri"></i> Clase triángulo</span>
+    <span><i class="sq"></i> Clase cuadrado</span>
+    <span><i class="ln"></i> Hiperplano</span>
+    <span><i class="dl"></i> Distancia a la línea</span>
+    <span><i class="mg"></i> Margen</span>
+    <span><i class="ring"></i> Vectores de soporte</span>
+  </div>
+</header>
+
+<!-- ================= 1. TRIÁNGULOS Y CUADRADOS ================= -->
+<section id="triangulos">
+  <div class="wrap">
+    <span class="kicker">1 · Triángulos y cuadrados</span>
+    <h2>Imagina por un momento…</h2>
+
+    <div class="story" id="story" tabindex="0" aria-label="Historia paso a paso">
+      <div class="plot-card">
+        <canvas class="plot" id="cv-story"></canvas>
+        <div class="legend">
+          <span><i class="tri"></i> Triángulo</span>
+          <span><i class="sq"></i> Cuadrado</span>
+          <span>? Dato nuevo</span>
+        </div>
+      </div>
+      <div>
+        <div class="st-bar">
+          <button id="st-prev" aria-label="Anterior">←</button>
+          <button class="primary" id="st-next" aria-label="Siguiente">→</button>
+        </div>
+        <div class="dots" id="st-dots"></div>
+        <p class="cap" id="st-text" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 2. QUÉ ES SVM ================= -->
+<section id="svm">
+  <div class="wrap">
+    <span class="kicker">2 · ¿Qué es un SVM?</span>
+    <h2>Felicidades: acabas de usar un SVM</h2>
+
+    <p class="voz q">Encontrar la mejor línea entre dos clases es lo que hace un <strong>SVM</strong>, por sus siglas en inglés:
+      <em>Support Vector Machines</em>, o <strong>Máquinas de Vectores de Soporte</strong>.</p>
+
+    <div class="svm-tiles" aria-label="Support Vector Machines">
+      <div class="tile"><div class="L">S</div><div class="en">Support</div><div class="es">Soporte</div></div>
+      <div class="tile"><div class="L">V</div><div class="en">Vector</div><div class="es">Vectores</div></div>
+      <div class="tile"><div class="L">M</div><div class="en">Machines</div><div class="es">Máquinas</div></div>
+    </div>
+
+    <p class="voz">Es una técnica de <strong>machine learning</strong> que nos ayuda a <strong>clasificar datos</strong>:
+      decidir a qué clase pertenece un dato nuevo.</p>
+
+    <div class="grid2" style="max-width:820px">
+      <div class="card mini">
+        <svg viewBox="0 0 200 90" aria-hidden="true" id="mini-sup"></svg>
+        <h3>Aprendizaje supervisado</h3>
+        <p style="margin:0">Conocemos de antemano las clases. <strong>Aquí nos quedamos.</strong></p>
+      </div>
+      <div class="card mini">
+        <svg viewBox="0 0 200 90" aria-hidden="true" id="mini-nosup"></svg>
+        <h3>Aprendizaje no supervisado</h3>
+        <p style="margin:0">No conocemos las clases. También se usa, pero es más complejo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 3. MUCHAS LÍNEAS ================= -->
+<section id="lineas">
+  <div class="wrap">
+    <span class="kicker">3 · Muchas líneas posibles</span>
+    <h2>Pudimos haber trazado otra línea</h2>
+
+    <p class="voz q">Clasificamos según la <strong>pendiente</strong> de la línea. Pero pudimos trazarla de esta forma, de esta forma
+      o de esta otra: al cambiar su <strong>inclinación</strong> obtenemos <strong>diferentes modelos</strong> que también separan los datos.</p>
+
+    <div class="grid2" style="align-items:start; margin-top:18px">
+      <div class="plot-card">
+        <canvas class="plot" id="cv-lineas" aria-label="Tres líneas distintas que separan triángulos y cuadrados"></canvas>
+      </div>
+      <div class="card">
+        <div class="btns" id="ln-btns">
+          <button data-ln="0">De esta forma</button>
+          <button data-ln="1">De esta forma</button>
+          <button data-ln="2">O de esta otra</button>
+          <button data-ln="-1" aria-pressed="true">Las tres</button>
+        </div>
+        <p class="voz" style="margin:16px 0 0"><strong>Cada línea es un modelo distinto.</strong></p>
+      </div>
+    </div>
+
+    <p class="voz" style="margin-top:28px">¿Y qué importa cuál agarremos, si al final son líneas? Importa: en el mundo real,
+      esta línea puede decidir…</p>
+    <div class="grid3">
+      <div class="card"><h3>🏦 Préstamos</h3><p style="margin:0">…quién es apto para un préstamo.</p></div>
+      <div class="card"><h3>💊 Medicamentos</h3><p style="margin:0">…quién cumple los requisitos para un medicamento.</p></div>
+      <div class="card"><h3>📧 Correo</h3><p style="margin:0">…qué correos son spam.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 4. LA MEJOR LÍNEA ================= -->
+<section id="mejor">
+  <div class="wrap">
+    <span class="kicker">4 · La mejor línea</span>
+    <h2>¿Cómo obtenemos la mejor línea?</h2>
+
+    <p class="voz q">Trazamos una línea y observamos los puntos más cercanos a ella. Desde esos puntos trazamos líneas que lleguen
+      a la principal: la mejor línea es la que deja la <strong>máxima separación en ambos lados</strong>.</p>
+
+    <div class="grid2" style="align-items:start; margin-top:18px">
+      <div class="plot-card">
+        <canvas class="plot" id="cv-mejor" aria-label="La línea principal, los puntos más cercanos y sus distancias"></canvas>
+        <div class="legend">
+          <span><i class="ln"></i> Línea principal</span>
+          <span><i class="dl"></i> Distancia a la línea</span>
+          <span><i class="ring"></i> Puntos más cercanos</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="btns" id="m-btns">
+          <button data-m="0">Línea 1</button>
+          <button data-m="1">Línea 2</button>
+          <button data-m="2">Línea 3</button>
+        </div>
+        <div class="side">
+          <div class="lbl"><span>▲ Triángulo más cercano</span><output id="m-dt"></output></div>
+          <div class="bar"><i class="t" id="m-bt"></i><b></b></div>
+        </div>
+        <div class="side">
+          <div class="lbl"><span>■ Cuadrado más cercano</span><output id="m-ds"></output></div>
+          <div class="bar"><i class="s" id="m-bs"></i><b></b></div>
+        </div>
+        <div class="msg" id="m-msg" role="status"></div>
+        <div class="controls" style="margin-top:16px">
+          <div class="ctl"><span class="lbl">O trázala tú:</span></div>
+          <div class="ctl">
+            <label for="m-th">Inclinación <output id="m-th-o"></output></label>
+            <input type="range" id="m-th" min="-60" max="70" step="0.5" value="0">
+          </div>
+          <div class="ctl">
+            <label for="m-pos">Posición <output id="m-pos-o"></output></label>
+            <input type="range" id="m-pos" min="-3" max="3" step="0.01" value="0">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:36px">Los términos formales</h3>
+    <div class="card" style="max-width:820px; overflow-x:auto">
+      <table class="formal">
+        <thead><tr><th>Lo que hemos dicho</th><th>Término formal</th></tr></thead>
+        <tbody>
+          <tr><td>La línea que separa los grupos</td><td>Hiperplano<small>Línea en 2D, plano en 3D, hiperplano en más dimensiones.</small></td></tr>
+          <tr><td>Los puntos más cercanos a la línea</td><td>Vectores de soporte<small>Cada punto es un vector; estos «soportan» la línea.</small></td></tr>
+          <tr><td>La separación entre la línea y esos puntos</td><td>Margen</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 5. PARÁMETRO C ================= -->
+<section id="c">
+  <div class="wrap">
+    <span class="kicker">5 · Datos traslapados</span>
+    <h2>Cuando los datos se mezclan: el parámetro C</h2>
+
+    <p class="voz q">Si la información está <strong>traslapada</strong> (mezclada), ninguna línea es perfecta: por más hiperplanos que
+      traces, siempre clasificarás mal algún dato.</p>
+    <p class="voz q">Para eso está el <strong>parámetro C</strong>: ajusta el hiperplano para separar los datos de la mejor manera.
+      El modelo puede quedar medio raro, pero hace el trabajo. C es ajustable: hay que buscar su mejor valor.</p>
+
+    <div class="grid2" style="align-items:start; margin-top:18px">
+      <div class="plot-card">
+        <canvas class="plot" id="cv-lab" aria-label="El SVM entrenado en vivo con los datos del dibujo"></canvas>
+      </div>
+      <div class="card">
+        <div class="controls">
+          <div>
+            <div class="ctl"><span class="lbl">Modelo</span></div>
+            <div class="seg" style="margin-top:6px">
+              <button id="k-lin" aria-pressed="true">Una línea recta</button>
+              <button id="k-rbf" aria-pressed="false">Un modelo así (medio raro)</button>
+            </div>
+          </div>
+          <div class="ctl">
+            <label for="l-c">Parámetro C <output id="l-c-o"></output></label>
+            <input type="range" id="l-c" min="-1" max="2" step="0.05" value="0">
+          </div>
+          <div>
+            <div class="ctl"><span class="lbl">Al hacer clic agrego…</span></div>
+            <div class="seg" style="margin-top:6px">
+              <button id="add-t" aria-pressed="true">▲ Triángulo</button>
+              <button id="add-s" aria-pressed="false">■ Cuadrado</button>
+            </div>
+          </div>
+          <div>
+            <div class="ctl"><span class="lbl">Datos</span></div>
+            <div class="btns" style="margin-top:6px">
+              <button data-preset="traslapados">Traslapados</button>
+              <button data-preset="separados">Separados</button>
+              <button data-preset="vacio">Borrar todo</button>
+            </div>
+          </div>
+        </div>
+        <div class="readout">
+          <div class="stat"><div class="k">Mal clasificados</div><div class="v" id="l-err">–</div></div>
+          <div class="stat"><div class="k">Vectores de soporte</div><div class="v" id="l-sv">–</div></div>
+        </div>
+        <div class="msg" id="l-msg" role="status"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 6. PRÉSTAMO ================= -->
+<section id="prestamo">
+  <div class="wrap">
+    <span class="kicker">6 · Ejemplo real</span>
+    <h2>¿Quién es apto para un préstamo?</h2>
+    <p class="lead">Un banco decide si aprueba una tarjeta de crédito: ▲ aprobado, ■ rechazado.
+      X es el <strong>ingreso</strong> y Y la <strong>deuda</strong> (en miles).</p>
+
+    <div class="grid2" style="margin-top:20px; align-items:start">
+      <div class="plot-card">
+        <canvas class="plot" id="cv-pred" aria-label="Los 12 clientes del banco, el hiperplano y el cliente nuevo"></canvas>
+        <div class="legend">
+          <span><i class="tri"></i> Aprobado</span>
+          <span><i class="sq"></i> Rechazado</span>
+          <span><i class="ln"></i> Hiperplano</span>
+          <span><i class="mg"></i> Margen</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="form">
+          <div><label for="p-nom">Nombre</label><input id="p-nom" value="Ana" autocomplete="off"></div>
+          <div></div>
+          <div><label for="p-ing">Ingreso mensual (miles)</label><input id="p-ing" type="number" value="25" step="1"></div>
+          <div><label for="p-deu">Deuda (miles)</label><input id="p-deu" type="number" value="10" step="1"></div>
+        </div>
+        <div class="verdict" role="status">
+          <div id="p-out"></div>
+          <div class="calc" id="p-calc"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="codewalk">
+<pre class="code"><span class="k">from</span> sklearn.svm <span class="k">import</span> SVC
+
+<span class="c"># 1. Datos con su clase</span>
+X = [[45, 5], [38, 10], ...]  <span class="c"># ingreso, deuda</span>
+y = [1, 1, ..., 0, 0]         <span class="c"># 1 = aprobado</span>
+
+<span class="c"># 2. El modelo: línea recta y parámetro C</span>
+modelo = SVC(kernel=<span class="s">"linear"</span>, C=1)
+
+<span class="c"># 3. Entrenar: margen máximo</span>
+modelo.fit(X, y)
+
+<span class="c"># 4. Clasificar un dato nuevo</span>
+modelo.predict([[25, 10]])           <span class="c"># [1]</span>
+modelo.decision_function([[25, 10]]) <span class="c"># [0.44]</span></pre>
+      <ol class="steps">
+        <li><strong>Datos:</strong> <code>X</code> son las coordenadas (ingreso, deuda) y <code>y</code> la clase.
+          Conocemos las clases: aprendizaje supervisado.</li>
+        <li><strong>Modelo:</strong> <code>kernel="linear"</code> es una línea recta y <code>C=1</code>, el parámetro C.</li>
+        <li><strong>Entrenar</strong> (<code>fit</code>): busca la línea con el margen máximo.</li>
+        <li><strong>Clasificar</strong> (<code>predict</code>): de qué lado cae el dato nuevo, 1 o 0.</li>
+        <li><strong>Distancia</strong> (<code>decision_function</code>): qué tan lejos del hiperplano cae. Si es menos de 1,
+          está dentro del margen y la decisión es dudosa.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONCLUSIÓN ================= -->
+<section id="conclusion">
+  <div class="wrap">
+    <span class="kicker">Conclusión</span>
+    <h2>En resumen</h2>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>¿Para qué sirve?</h3>
+        <p style="margin:0">Para que una computadora aprenda con ejemplos a <strong>separar dos grupos</strong> y luego
+          <strong>decida sola</strong> a cuál va cada dato nuevo.</p>
+      </div>
+      <div class="card">
+        <h3>¿Para qué nos sirve?</h3>
+        <p style="margin:0">Para tomar decisiones reales: quién es apto para un préstamo, quién cumple
+          los requisitos para un medicamento o qué correos son spam.</p>
+      </div>
+      <div class="card">
+        <h3>Ventajas</h3>
+        <ul class="pc pro">
+          <li>Elige la línea más segura: la del margen máximo.</li>
+          <li>Solo depende de unos pocos puntos: los vectores de soporte.</li>
+          <li>Funciona bien aun con pocos datos.</li>
+          <li>Con el parámetro C se adapta a datos mezclados.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Desventajas</h3>
+        <ul class="pc con">
+          <li>Hay que ajustar C; si te pasas, se aprende los datos de memoria.</li>
+          <li>Se vuelve lento con muchísimos datos.</li>
+          <li>Necesita ejemplos con su clase ya conocida.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<script>
+(() => {
+"use strict";
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ease = t => 1 - Math.pow(1 - t, 3);
+
+/* ---------- SVM (SMO, como libsvm) ---------- */
+function trainSVM(pts, C, kernel, gamma) {
+  const n = pts.length;
+  const K = kernel === "rbf"
+    ? (a, b) => Math.exp(-gamma * ((a.x - b.x) ** 2 + (a.y - b.y) ** 2))
+    : (a, b) => a.x * b.x + a.y * b.y;
+  const y = pts.map(p => (p.c === 1 ? 1 : -1));
+  const Km = pts.map(a => pts.map(b => K(a, b)));
+  const alpha = new Array(n).fill(0), G = new Array(n).fill(-1);
+  for (let it = 0; it < 100000; it++) {
+    let i = -1, j = -1, gmax = -Infinity, gmin = Infinity;
+    for (let t = 0; t < n; t++) {
+      const v = -y[t] * G[t];
+      const up = (y[t] === 1 && alpha[t] < C) || (y[t] === -1 && alpha[t] > 0);
+      const low = (y[t] === 1 && alpha[t] > 0) || (y[t] === -1 && alpha[t] < C);
+      if (up && v > gmax) { gmax = v; i = t; }
+      if (low && v < gmin) { gmin = v; j = t; }
+    }
+    if (i < 0 || j < 0 || gmax - gmin < 1e-3) break;
+    let a = Km[i][i] + Km[j][j] - 2 * Km[i][j];
+    if (a <= 0) a = 1e-12;
+    const oi = alpha[i], oj = alpha[j], sum = y[i] * oi + y[j] * oj;
+    let ni = Math.min(C, Math.max(0, oi + y[i] * (gmax - gmin) / a));
+    const nj = Math.min(C, Math.max(0, y[j] * (sum - y[i] * ni)));
+    ni = y[i] * (sum - y[j] * nj);
+    const di = ni - oi, dj = nj - oj;
+    alpha[i] = ni; alpha[j] = nj;
+    for (let t = 0; t < n; t++) G[t] += y[t] * y[i] * Km[t][i] * di + y[t] * y[j] * Km[t][j] * dj;
+  }
+  let ub = Infinity, lb = -Infinity, s = 0, nf = 0;
+  for (let t = 0; t < n; t++) {
+    const yG = y[t] * G[t];
+    if (alpha[t] >= C - 1e-9) { if (y[t] === -1) ub = Math.min(ub, yG); else lb = Math.max(lb, yG); }
+    else if (alpha[t] <= 1e-9) { if (y[t] === 1) ub = Math.min(ub, yG); else lb = Math.max(lb, yG); }
+    else { s += yG; nf++; }
+  }
+  const rho = nf > 0 ? s / nf : (ub + lb) / 2;
+  const sv = [];
+  for (let t = 0; t < n; t++) if (alpha[t] > 1e-7) sv.push(t);
+  const f = (px, py) => {
+    let r = -rho;
+    const q = { x: px, y: py };
+    for (const m of sv) r += alpha[m] * y[m] * K(pts[m], q);
+    return r;
+  };
+  let w = null;
+  if (kernel !== "rbf") {
+    w = { x: 0, y: 0 };
+    for (const m of sv) { w.x += alpha[m] * y[m] * pts[m].x; w.y += alpha[m] * y[m] * pts[m].y; }
+  }
+  return { f, w, b: -rho, sv };
+}
+
+/* ---------- Datos ---------- */
+const mk = (arr, c) => arr.map(p => ({ x: p[0], y: p[1], c }));
+// Triángulos = clase 1 (arriba), cuadrados = clase 0 (abajo)
+const T1 = mk([[1.4,4.1],[2.3,5.2],[3.1,4.3],[4.0,5.4],[4.6,4.4],[5.6,5.1],[6.6,5.6],[2.0,3.3]], 1);
+const S1 = mk([[3.8,1.1],[4.9,0.6],[5.4,1.8],[6.4,1.0],[7.3,2.0],[8.2,1.2],[8.8,2.6],[9.3,0.8]], 0);
+const Q1 = { x: 7.6, y: 0.6, c: 0 };
+const T2 = mk([[1.0,5.4],[3.6,3.7],[7.8,5.3]], 1);
+const S2 = mk([[6.1,2.5],[9.1,1.9],[4.4,1.7]], 0);
+const Q2 = { x: 5.0, y: 3.5, c: 1 };
+const DATA = [...T1, ...S1, Q1, ...T2, ...S2];
+
+const OPT = trainSVM(DATA, 1000, "linear");
+const ON = Math.hypot(OPT.w.x, OPT.w.y);
+const OPT_LINE = { n: { x: OPT.w.x / ON, y: OPT.w.y / ON }, cc: -OPT.b / ON };
+const MSTAR = 1 / ON;
+
+const OVERLAP = [
+  ...mk([[1.2,4.6],[2.0,5.4],[2.8,4.2],[3.5,5.1],[4.4,4.6],[5.3,5.4],[6.2,4.9],[7.4,5.5],[1.8,3.4],[8.5,4.8],[9.3,5.4],[5.6,3.9],
+         [5.9,2.6],[7.8,2.9],[3.4,2.3]], 1),
+  ...mk([[2.4,0.8],[3.5,1.4],[4.6,0.7],[5.2,1.8],[6.4,1.2],[7.2,0.6],[8.3,1.5],[9.2,2.4],[6.8,2.2],[1.5,1.6],[8.9,0.6],[4.2,2.9],
+         [2.6,3.6],[4.9,3.9],[8.7,3.8]], 0)
+];
+
+const BANK = [
+  ["Tachi", 45, 5, 1], ["Luis", 38, 10, 1], ["Sofía", 30, 8, 1],
+  ["Pedro", 50, 15, 1], ["María", 28, 4, 1], ["Bello", 35, 12, 1],
+  ["Carlos", 12, 25, 0], ["Elena", 15, 30, 0], ["Tacho", 8, 10, 0],
+  ["Diana", 20, 28, 0], ["Tomás", 10, 20, 0], ["Lucía", 18, 22, 0]
+];
+const BANK_PTS = BANK.map(r => ({ x: r[1], y: r[2], c: r[3], name: r[0] }));
+const BANK_MODEL = trainSVM(BANK_PTS, 1, "linear");
+const BW = BANK_MODEL.w, BB = BANK_MODEL.b, BNORM = Math.hypot(BW.x, BW.y);
+
+const F_ABS = { xmax: 10, ymax: 7, tick: 2, xl: "X →", yl: "Y →" };
+const F_BANK = { xmax: 60, ymax: 36, tick: 10, xl: "Ingreso (miles) →", yl: "Deuda (miles) →" };
+
+/* ---------- Dibujo ---------- */
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const colors = () => ({
+  ink: css("--ink"), muted: css("--muted"), line: css("--line"), surface: css("--surface"),
+  blue: css("--blue"), orange: css("--orange"), band: css("--band"), accent: css("--accent"),
+  bad: css("--bad")
+});
+function hexRGB(h) {
+  h = h.replace("#", "");
+  if (h.length === 3) h = [...h].map(c => c + c).join("");
+  return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16));
+}
+const fmt = (v, d = 1) => Number(v).toFixed(d);
+const FONT = "'Atkinson Hyperlegible', system-ui, sans-serif";
+
+function setup(cv, F) {
+  const w = cv.clientWidth || cv.parentNode.clientWidth;
+  const small = w < 440;
+  const pad = { l: small ? 30 : 44, r: 10, t: 10, b: small ? 32 : 40 };
+  const s = (w - pad.l - pad.r) / F.xmax;
+  const h = Math.round(pad.t + pad.b + s * F.ymax);
+  const dpr = window.devicePixelRatio || 1;
+  cv.style.height = h + "px";
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const P = {
+    ctx, w, h, s, pad, small, dpr, F, col: colors(), r: small ? 6 : 8,
+    X: x => pad.l + x * s,
+    Y: y => pad.t + (F.ymax - y) * s,
+    inv: (px, py) => ({ x: (px - pad.l) / s, y: F.ymax - (py - pad.t) / s }),
+    clip() { ctx.save(); ctx.beginPath(); ctx.rect(pad.l, pad.t, F.xmax * s, F.ymax * s); ctx.clip(); }
+  };
+  cv._P = P;
+  return P;
+}
+
+function axes(P) {
+  const c = P.ctx, col = P.col, F = P.F;
+  c.save();
+  c.strokeStyle = col.line; c.lineWidth = 1; c.fillStyle = col.muted;
+  c.font = (P.small ? 11 : 13) + "px " + FONT;
+  for (let x = 0; x <= F.xmax + 1e-9; x += F.tick) {
+    c.beginPath(); c.moveTo(P.X(x), P.Y(0)); c.lineTo(P.X(x), P.Y(F.ymax)); c.stroke();
+    c.textAlign = "center"; c.textBaseline = "top"; c.fillText(x, P.X(x), P.Y(0) + 5);
+  }
+  for (let y = 0; y <= F.ymax + 1e-9; y += F.tick) {
+    c.beginPath(); c.moveTo(P.X(0), P.Y(y)); c.lineTo(P.X(F.xmax), P.Y(y)); c.stroke();
+    c.textAlign = "right"; c.textBaseline = "middle";
+    if (y > 0) c.fillText(y, P.X(0) - 6, P.Y(y));
+  }
+  c.strokeRect(P.X(0), P.Y(F.ymax), F.xmax * P.s, F.ymax * P.s);
+  c.textAlign = "center"; c.textBaseline = "bottom";
+  c.fillText(F.xl, P.X(F.xmax / 2), P.h - 1);
+  c.translate(P.small ? 9 : 12, P.Y(F.ymax / 2)); c.rotate(-Math.PI / 2);
+  c.textBaseline = "middle"; c.fillText(F.yl, 0, 0);
+  c.restore();
+}
+
+function shapePath(c, kind, x, y, r) {
+  c.beginPath();
+  if (kind === 1) {
+    const R = r * 1.45;
+    c.moveTo(x, y - R); c.lineTo(x + R * 0.866, y + R * 0.5); c.lineTo(x - R * 0.866, y + R * 0.5); c.closePath();
+  } else {
+    const k = r * 0.9;
+    c.rect(x - k, y - k, 2 * k, 2 * k);
+  }
+}
+
+function point(P, p, o = {}) {
+  const c = P.ctx, col = P.col, x = P.X(p.x), y = P.Y(p.y), r = P.r * (o.big ? 1.5 : 1);
+  const a = o.alpha ?? 1;
+  if (a <= 0) return;
+  c.save(); c.globalAlpha = a;
+  shapePath(c, p.c, x, y, r);
+  c.fillStyle = p.c === 1 ? col.blue : col.orange; c.fill();
+  c.strokeStyle = col.surface; c.lineWidth = 2; c.stroke();
+  if (o.ring) {
+    c.strokeStyle = col.ink; c.lineWidth = 2.5;
+    c.beginPath(); c.arc(x, y, r * 1.5 + 5, 0, Math.PI * 2); c.stroke();
+  }
+  if (o.cross) {
+    c.strokeStyle = col.bad; c.lineWidth = 3;
+    const k = r + 5;
+    c.beginPath(); c.moveTo(x - k, y - k); c.lineTo(x + k, y + k); c.moveTo(x + k, y - k); c.lineTo(x - k, y + k); c.stroke();
+  }
+  c.restore();
+}
+
+function unknown(P, p, alpha = 1) {
+  if (alpha <= 0) return;
+  const c = P.ctx, col = P.col, x = P.X(p.x), y = P.Y(p.y), r = P.r * 1.6;
+  c.save(); c.globalAlpha = alpha;
+  c.fillStyle = col.surface; c.strokeStyle = col.ink; c.lineWidth = 2.5; c.setLineDash([4, 3]);
+  c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); c.stroke();
+  c.setLineDash([]);
+  c.fillStyle = col.ink; c.font = "800 " + Math.round(r * 1.25) + "px " + FONT;
+  c.textAlign = "center"; c.textBaseline = "middle";
+  c.fillText("?", x, y + 1);
+  c.restore();
+}
+
+function tag(P, text, x, y, align = "left", o = {}) {
+  const a = o.alpha ?? 1;
+  if (a <= 0) return;
+  const c = P.ctx, col = P.col;
+  c.save(); c.globalAlpha = a;
+  c.font = "700 " + (P.small ? 11 : 13) + "px " + FONT;
+  const w = c.measureText(text).width + 14, h = P.small ? 20 : 24;
+  let left = align === "right" ? x - w : align === "center" ? x - w / 2 : x;
+  left = Math.max(2, Math.min(P.w - w - 2, left));
+  c.fillStyle = col.surface; c.strokeStyle = o.color || col.ink; c.lineWidth = 1.5;
+  c.beginPath();
+  if (c.roundRect) c.roundRect(left, y - h / 2, w, h, 7); else c.rect(left, y - h / 2, w, h);
+  c.fill(); c.stroke();
+  c.fillStyle = o.color || col.ink; c.textAlign = "left"; c.textBaseline = "middle";
+  c.fillText(text, left + 7, y + 1);
+  c.restore();
+}
+
+/* Líneas: n·p = cc con n unitario, en coordenadas de datos */
+function linePts(n, cc) {
+  const p0 = { x: n.x * cc, y: n.y * cc }, d = { x: -n.y, y: n.x }, L = 400;
+  return [{ x: p0.x - d.x * L, y: p0.y - d.y * L }, { x: p0.x + d.x * L, y: p0.y + d.y * L }];
+}
+function segInFrame(n, cc, F) {
+  const p0 = { x: n.x * cc, y: n.y * cc }, d = { x: -n.y, y: n.x };
+  let t0 = -1e9, t1 = 1e9;
+  const lim = (p, q) => {
+    if (Math.abs(p) < 1e-12) return q >= 0;
+    const r = q / p;
+    if (p < 0) t0 = Math.max(t0, r); else t1 = Math.min(t1, r);
+    return true;
+  };
+  if (!lim(-d.x, p0.x) || !lim(d.x, F.xmax - p0.x) || !lim(-d.y, p0.y) || !lim(d.y, F.ymax - p0.y) || t0 > t1) return null;
+  const A = { x: p0.x + d.x * t0, y: p0.y + d.y * t0 }, B = { x: p0.x + d.x * t1, y: p0.y + d.y * t1 };
+  return A.x <= B.x ? [A, B] : [B, A];
+}
+function strokeLine(P, n, cc, color, width, dash, frac = 1) {
+  const s = segInFrame(n, cc, P.F);
+  if (!s || frac <= 0) return;
+  const [A, B0] = s, B = { x: A.x + (B0.x - A.x) * frac, y: A.y + (B0.y - A.y) * frac };
+  const c = P.ctx;
+  c.save();
+  c.strokeStyle = color; c.lineWidth = width; c.lineCap = "round"; c.setLineDash(dash || []);
+  c.beginPath(); c.moveTo(P.X(A.x), P.Y(A.y)); c.lineTo(P.X(B.x), P.Y(B.y)); c.stroke();
+  c.restore();
+}
+function band(P, n, c1, c2, alpha = 1) {
+  const c = P.ctx, A = linePts(n, c1), B = linePts(n, c2);
+  P.clip(); c.globalAlpha = alpha; c.fillStyle = P.col.band;
+  c.beginPath();
+  c.moveTo(P.X(A[0].x), P.Y(A[0].y)); c.lineTo(P.X(A[1].x), P.Y(A[1].y));
+  c.lineTo(P.X(B[1].x), P.Y(B[1].y)); c.lineTo(P.X(B[0].x), P.Y(B[0].y));
+  c.closePath(); c.fill();
+  c.restore();
+}
+function halfPlane(P, n, cc, sign, color, alpha) {
+  const c = P.ctx, A = linePts(n, cc), D = 400 * sign;
+  P.clip(); c.globalAlpha = alpha; c.fillStyle = color;
+  c.beginPath();
+  c.moveTo(P.X(A[0].x), P.Y(A[0].y)); c.lineTo(P.X(A[1].x), P.Y(A[1].y));
+  c.lineTo(P.X(A[1].x + n.x * D), P.Y(A[1].y + n.y * D)); c.lineTo(P.X(A[0].x + n.x * D), P.Y(A[0].y + n.y * D));
+  c.closePath(); c.fill();
+  c.restore();
+}
+function tint(P, L, alpha) {
+  if (alpha <= 0) return;
+  halfPlane(P, L.n, L.cc, 1, P.col.blue, 0.10 * alpha);
+  halfPlane(P, L.n, L.cc, -1, P.col.orange, 0.10 * alpha);
+}
+function hull(ps) {
+  const p = ps.slice().sort((a, b) => a.x - b.x || a.y - b.y);
+  const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  const lo = [], up = [];
+  for (const q of p) { while (lo.length >= 2 && cross(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (let i = p.length - 1; i >= 0; i--) { const q = p[i]; while (up.length >= 2 && cross(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+  up.pop(); lo.pop();
+  return lo.concat(up);
+}
+function blob(P, ps, color, alpha) {
+  if (alpha <= 0) return;
+  const off = document.createElement("canvas");
+  off.width = P.ctx.canvas.width; off.height = P.ctx.canvas.height;
+  const o = off.getContext("2d");
+  o.setTransform(P.dpr, 0, 0, P.dpr, 0, 0);
+  o.beginPath();
+  hull(ps).forEach((q, i) => (i ? o.lineTo(P.X(q.x), P.Y(q.y)) : o.moveTo(P.X(q.x), P.Y(q.y))));
+  o.closePath();
+  o.fillStyle = color; o.fill();
+  o.lineJoin = "round"; o.lineWidth = P.s * 1.1; o.strokeStyle = color; o.stroke();
+  const c = P.ctx;
+  c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = alpha; c.drawImage(off, 0, 0); c.restore();
+}
+function foot(p, L) {
+  const d = L.n.x * p.x + L.n.y * p.y - L.cc;
+  return { x: p.x - L.n.x * d, y: p.y - L.n.y * d };
+}
+function distSeg(P, p, L) {
+  const c = P.ctx, q = foot(p, L);
+  c.save();
+  c.strokeStyle = P.col.accent; c.lineWidth = 3; c.lineCap = "round";
+  c.beginPath(); c.moveTo(P.X(p.x), P.Y(p.y)); c.lineTo(P.X(q.x), P.Y(q.y)); c.stroke();
+  c.fillStyle = P.col.accent;
+  c.beginPath(); c.arc(P.X(q.x), P.Y(q.y), 3.5, 0, Math.PI * 2); c.fill();
+  c.restore();
+  return { x: (P.X(p.x) + P.X(q.x)) / 2, y: (P.Y(p.y) + P.Y(q.y)) / 2 };
+}
+
+/* Analiza una línea: distancias al triángulo y al cuadrado más cercanos */
+function analyze(L, data) {
+  let dT = Infinity, dS = Infinity, iT = -1, iS = -1;
+  const wrong = [];
+  data.forEach((p, i) => {
+    const d = L.n.x * p.x + L.n.y * p.y - L.cc;
+    const s = p.c === 1 ? d : -d;
+    if (s <= 0) wrong.push(i);
+    else if (p.c === 1) { if (s < dT) { dT = s; iT = i; } }
+    else if (s < dS) { dS = s; iS = i; }
+  });
+  const near = new Set();
+  if (!wrong.length) data.forEach((p, i) => {
+    const s = (p.c === 1 ? 1 : -1) * (L.n.x * p.x + L.n.y * p.y - L.cc);
+    if (s - (p.c === 1 ? dT : dS) < 0.03) near.add(i);
+  });
+  return { dT, dS, iT, iS, wrong, near };
+}
+/* Línea con la inclinación del SVM girada `deg` grados, centrada entre los grupos y desplazada `shift` */
+function lineAt(deg, shift = 0) {
+  const a = Math.atan2(OPT_LINE.n.y, OPT_LINE.n.x) + deg * Math.PI / 180;
+  const n = { x: Math.cos(a), y: Math.sin(a) };
+  let minT = Infinity, maxS = -Infinity;
+  for (const p of DATA) {
+    const d = n.x * p.x + n.y * p.y;
+    if (p.c === 1) minT = Math.min(minT, d); else maxS = Math.max(maxS, d);
+  }
+  return { n, cc: (minT + maxS) / 2 + shift };
+}
+
+/* ---------- Portada ---------- */
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function svgTri(parent, x, y, R, fill) {
+  return el("polygon", { points: [[x, y - R], [x + R * 0.866, y + R * 0.5], [x - R * 0.866, y + R * 0.5]].map(p => p.join(",")).join(" "), fill }, parent);
+}
+function svgSq(parent, x, y, k, fill) {
+  return el("rect", { x: x - k, y: y - k, width: 2 * k, height: 2 * k, fill }, parent);
+}
+(function buildHero() {
+  const svg = document.getElementById("hero-svg");
+  el("polygon", { points: "0,149.7 1000,29.7 1000,110.3 0,230.3", fill: "var(--band)" }, svg);
+  el("line", { x1: 0, y1: 149.7, x2: 1000, y2: 29.7, stroke: "var(--muted)", "stroke-width": 2, "stroke-dasharray": "8 8" }, svg);
+  el("line", { x1: 0, y1: 230.3, x2: 1000, y2: 110.3, stroke: "var(--muted)", "stroke-width": 2, "stroke-dasharray": "8 8" }, svg);
+  el("line", { x1: 0, y1: 190, x2: 1000, y2: 70, stroke: "var(--ink)", "stroke-width": 4 }, svg);
+  [[420, 99.3, 424.9, 139.0], [820, 51.3, 824.9, 91.1], [600, 158.3, 595.4, 118.6]].forEach(([x1, y1, x2, y2]) => {
+    el("line", { x1, y1, x2, y2, stroke: "var(--accent)", "stroke-width": 4, "stroke-linecap": "round" }, svg);
+  });
+  [[420, 99.3], [820, 51.3], [120, 60], [90, 112], [330, 40], [560, 40], [680, 28], [230, 75]].forEach(([x, y]) => svgTri(svg, x, y, 17, "var(--blue)"));
+  [[600, 158.3], [300, 235], [450, 215], [760, 200], [880, 150], [930, 225], [180, 238]].forEach(([x, y]) => svgSq(svg, x, y, 12, "var(--orange)"));
+  [[420, 99.3], [820, 51.3], [600, 158.3]].forEach(([cx, cy]) => el("circle", { cx, cy, r: 26, fill: "none", stroke: "var(--ink)", "stroke-width": 2.5 }, svg));
+})();
+(function buildMini() {
+  const T = [[30, 28], [62, 18], [44, 58], [82, 46], [24, 70]], S = [[124, 50], [154, 26], [168, 64], [134, 78], [182, 40]];
+  const sup = document.getElementById("mini-sup"), nos = document.getElementById("mini-nosup");
+  T.forEach(([x, y]) => svgTri(sup, x, y, 10, "var(--blue)"));
+  S.forEach(([x, y]) => svgSq(sup, x, y, 7.5, "var(--orange)"));
+  T.concat(S).forEach(([x, y]) => el("circle", { cx: x, cy: y, r: 8, fill: "var(--muted)", opacity: 0.55 }, nos));
+})();
+
+/* ---------- 1. Historia ---------- */
+// Solo el último paso lleva texto: los demás los explica quien presenta.
+const STEPS = ["", "", "", "", "", "", "",
+  "Felicidades: acabas de encontrar la mejor línea que separa a dos grupos o clases, la clase triángulo y la clase cuadrado."];
+const cvStory = document.getElementById("cv-story");
+const stText = document.getElementById("st-text");
+const stPrev = document.getElementById("st-prev"), stNext = document.getElementById("st-next"), stDots = document.getElementById("st-dots");
+let stK = 0, stAnim = 0;
+
+function rng(seed) {
+  return () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const CONF = (() => {
+  const r = rng(7);
+  return Array.from({ length: 44 }, () => ({
+    x: r(), y: -0.05 - r() * 0.3, vx: (r() - 0.5) * 0.3, vy: 0.5 + r() * 0.6,
+    c: r() < 0.5 ? 1 : 0, rot: r() * 6, vr: (r() - 0.5) * 8, s: 0.6 + r() * 0.6
+  }));
+})();
+function confetti(P, t) {
+  if (t >= 1) return;
+  const c = P.ctx;
+  for (const f of CONF) {
+    const x = (f.x + f.vx * t) * P.w, y = (f.y + f.vy * t + 0.45 * t * t) * P.h;
+    c.save(); c.globalAlpha = 1 - t * t; c.translate(x, y); c.rotate(f.rot + f.vr * t);
+    shapePath(c, f.c, 0, 0, 5 * f.s); c.fillStyle = f.c ? P.col.blue : P.col.orange; c.fill();
+    c.restore();
+  }
+}
+function guides(P, p, a) {
+  const c = P.ctx, col = P.col;
+  c.save(); c.globalAlpha = a; c.strokeStyle = col.accent; c.lineWidth = 2; c.setLineDash([5, 5]);
+  c.beginPath();
+  c.moveTo(P.X(p.x), P.Y(p.y)); c.lineTo(P.X(p.x), P.Y(0));
+  c.moveTo(P.X(p.x), P.Y(p.y)); c.lineTo(P.X(0), P.Y(p.y));
+  c.stroke();
+  c.restore();
+  tag(P, "X = " + p.x, P.X(p.x), P.Y(0) + (P.small ? 12 : 14), "center", { color: col.accent, alpha: a });
+  tag(P, "Y = " + p.y, P.X(0) - 2, P.Y(p.y), "right", { color: col.accent, alpha: a });
+}
+
+function drawStory(k, t) {
+  const P = setup(cvStory, F_ABS), col = P.col;
+  const fade = from => (from < k ? 1 : from === k ? t : 0);
+  if (k >= 6) tint(P, OPT_LINE, fade(6));
+  axes(P);
+  if (k >= 1 && k <= 5) {
+    const a = fade(1);
+    blob(P, T1.concat(k >= 4 ? T2 : []), col.blue, 0.15 * a);
+    blob(P, S1.concat(k >= 3 ? [Q1] : [], k >= 4 ? S2 : []), col.orange, 0.15 * a);
+    tag(P, "▲ área de los triángulos", P.X(0.25), P.Y(6.5), "left", { color: col.blue, alpha: a });
+    tag(P, "área de los cuadrados ■", P.X(9.95), P.Y(3.25), "right", { color: col.orange, alpha: a });
+  }
+  if (k >= 6) {
+    strokeLine(P, OPT_LINE.n, OPT_LINE.cc, col.ink, 3.5, null, k === 6 ? t : 1);
+    const a = fade(6);
+    tag(P, "▲ arriba: triángulo", P.X(0.25), P.Y(6.5), "left", { color: col.blue, alpha: a });
+    tag(P, "abajo: cuadrado ■", P.X(0.25), P.Y(0.45), "left", { color: col.orange, alpha: a });
+  }
+  T1.concat(S1).forEach(p => point(P, p, { alpha: fade(0) }));
+  if (k === 2) { guides(P, Q1, t); unknown(P, Q1, t); }
+  else if (k === 3) { unknown(P, Q1, 1 - t); point(P, Q1, { ring: true, alpha: t }); }
+  else if (k > 3) point(P, Q1);
+  if (k >= 4) T2.concat(S2).forEach(p => point(P, p, { alpha: fade(4) }));
+  if (k === 5 || k === 6) unknown(P, Q2, k === 5 ? t : 1);
+  if (k === 7) {
+    unknown(P, Q2, 1 - t);
+    point(P, Q2, { ring: true, alpha: t });
+    tag(P, "cae arriba: ¡triángulo!", P.X(Q2.x) + P.r * 2.6 + 8, P.Y(Q2.y) - P.r * 2.4, "left", { color: col.blue, alpha: t });
+    confetti(P, t);
+  }
+}
+STEPS.forEach((s, i) => {
+  const b = document.createElement("button");
+  b.setAttribute("aria-label", "Paso " + (i + 1));
+  b.addEventListener("click", () => storyGo(i));
+  stDots.appendChild(b);
+});
+function storyGo(k, animate = true) {
+  stK = Math.max(0, Math.min(STEPS.length - 1, k));
+  stText.textContent = STEPS[stK];
+  stText.hidden = !STEPS[stK];
+  [...stDots.children].forEach((b, i) => b.classList.toggle("on", i === stK));
+  stPrev.disabled = stK === 0; stNext.disabled = stK === STEPS.length - 1;
+  cvStory.setAttribute("aria-label", STEPS[stK] || "Paso " + (stK + 1) + " de " + STEPS.length);
+  cancelAnimationFrame(stAnim);
+  if (!animate || reduce) { drawStory(stK, 1); return; }
+  const t0 = performance.now(), dur = stK === 6 ? 1300 : stK === 7 ? 1600 : 750;
+  const tick = now => {
+    const t = Math.min(1, Math.max(0, (now - t0) / dur));
+    drawStory(stK, ease(t));
+    if (t < 1) stAnim = requestAnimationFrame(tick);
+  };
+  stAnim = requestAnimationFrame(tick);
+}
+stPrev.addEventListener("click", () => storyGo(stK - 1));
+stNext.addEventListener("click", () => storyGo(stK + 1));
+cvStory.addEventListener("click", () => { if (stK < STEPS.length - 1) storyGo(stK + 1); });
+document.getElementById("story").addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") { e.preventDefault(); if (stK < STEPS.length - 1) storyGo(stK + 1); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); if (stK > 0) storyGo(stK - 1); }
+});
+
+/* ---------- 3. Muchas líneas ---------- */
+const cvLineas = document.getElementById("cv-lineas");
+const MODELS = [lineAt(-15), lineAt(12), lineAt(0, -0.45)];
+let lnSel = -1;
+function drawLineas() {
+  const P = setup(cvLineas, F_ABS), col = P.col;
+  axes(P);
+  MODELS.forEach((L, i) => { if (lnSel !== -1 && lnSel !== i) strokeLine(P, L.n, L.cc, col.muted, 1.5, [5, 6]); });
+  MODELS.forEach((L, i) => { if (lnSel === -1 || lnSel === i) strokeLine(P, L.n, L.cc, col.ink, 3); });
+  DATA.forEach(p => point(P, p));
+  MODELS.forEach((L, i) => {
+    if (lnSel !== -1 && lnSel !== i) return;
+    const s = segInFrame(L.n, L.cc, P.F);
+    if (s) tag(P, "Modelo " + (i + 1), P.X(s[1].x) - 6, P.Y(s[1].y) + (s[1].y > P.F.ymax - 0.3 ? 16 : -16), "right");
+  });
+}
+document.querySelectorAll("#ln-btns button").forEach(b => b.addEventListener("click", () => {
+  lnSel = +b.dataset.ln;
+  document.querySelectorAll("#ln-btns button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  drawLineas();
+}));
+
+/* ---------- 4. La mejor línea ---------- */
+const cvMejor = document.getElementById("cv-mejor");
+const mTh = document.getElementById("m-th"), mPos = document.getElementById("m-pos");
+const CENTER = { x: 5, y: 3 };
+const DEMOS = [lineAt(-20), lineAt(0, 0.7), lineAt(0)];
+function toTP(L) {
+  let n = L.n, cc = L.cc;
+  if (n.y < 0) { n = { x: -n.x, y: -n.y }; cc = -cc; }
+  return { th: Math.atan2(-n.x, n.y) * 180 / Math.PI, pos: (cc - n.x * CENTER.x - n.y * CENTER.y) / n.y };
+}
+function fromTP(tp) {
+  const a = tp.th * Math.PI / 180, n = { x: -Math.sin(a), y: Math.cos(a) };
+  return { n, cc: n.x * CENTER.x + n.y * (CENTER.y + tp.pos) };
+}
+let ML = toTP(DEMOS[0]), mAnim = 0;
+const SCALE = MSTAR * 1.6;
+
+function drawMejor() {
+  const L = fromTP(ML), A = analyze(L, DATA);
+  const P = setup(cvMejor, F_ABS), col = P.col;
+  axes(P);
+  const ok = !A.wrong.length;
+  if (ok) {
+    band(P, L.n, L.cc - A.dS, L.cc + A.dT, 0.8);
+    strokeLine(P, L.n, L.cc + A.dT, col.muted, 1.5, [6, 6]);
+    strokeLine(P, L.n, L.cc - A.dS, col.muted, 1.5, [6, 6]);
+  }
+  strokeLine(P, L.n, L.cc, col.ink, 3.5);
+  let mT, mS;
+  if (ok) { mT = distSeg(P, DATA[A.iT], L); mS = distSeg(P, DATA[A.iS], L); }
+  DATA.forEach((p, i) => point(P, p, { ring: A.near.has(i), cross: A.wrong.includes(i) }));
+  if (ok) {
+    tag(P, fmt(A.dT, 2), mT.x + 10, mT.y, "left", { color: col.accent });
+    tag(P, fmt(A.dS, 2), mS.x + 10, mS.y, "left", { color: col.accent });
+  }
+
+  mTh.value = ML.th; mPos.value = ML.pos;
+  document.getElementById("m-th-o").textContent = fmt(ML.th, 1) + "°";
+  document.getElementById("m-pos-o").textContent = fmt(ML.pos, 2);
+  document.getElementById("m-dt").textContent = ok ? fmt(A.dT, 2) : "—";
+  document.getElementById("m-ds").textContent = ok ? fmt(A.dS, 2) : "—";
+  document.getElementById("m-bt").style.width = ok ? Math.min(100, A.dT / SCALE * 100) + "%" : "0";
+  document.getElementById("m-bs").style.width = ok ? Math.min(100, A.dS / SCALE * 100) + "%" : "0";
+
+  const msg = document.getElementById("m-msg");
+  if (!ok) {
+    msg.className = "msg bad";
+    msg.textContent = "Esta línea ya no separa: deja " +
+      (A.wrong.length === 1 ? "1 dato" : A.wrong.length + " datos") + " del lado equivocado (✕).";
+    return;
+  }
+  const lo = Math.min(A.dT, A.dS), hi = Math.max(A.dT, A.dS);
+  if (lo >= MSTAR - 0.05) {
+    msg.className = "msg good";
+    msg.textContent = "Margen en su máxima distancia en ambos lados: este hiperplano es el que mejor separa los datos, y esos puntos son sus vectores de soporte.";
+  } else if (hi > lo * 1.8) {
+    msg.className = "msg";
+    msg.textContent = "Margen desbalanceado: de un lado hay buena separación, pero del otro está muy cerca.";
+  } else {
+    msg.className = "msg";
+    msg.textContent = "El margen es pequeño: hay que trazar otra.";
+  }
+}
+function pressM(i) { document.querySelectorAll("#m-btns button").forEach((x, j) => x.setAttribute("aria-pressed", String(j === i))); }
+document.querySelectorAll("#m-btns button").forEach(b => b.addEventListener("click", () => {
+  const i = +b.dataset.m, to = toTP(DEMOS[i]), from = { ...ML };
+  pressM(i);
+  cancelAnimationFrame(mAnim);
+  if (reduce) { ML = to; drawMejor(); return; }
+  const t0 = performance.now();
+  const tick = now => {
+    const t = Math.min(1, Math.max(0, (now - t0) / 800)), e = ease(t);
+    ML = { th: from.th + (to.th - from.th) * e, pos: from.pos + (to.pos - from.pos) * e };
+    drawMejor();
+    if (t < 1) mAnim = requestAnimationFrame(tick);
+  };
+  mAnim = requestAnimationFrame(tick);
+}));
+[mTh, mPos].forEach(inp => inp.addEventListener("input", () => {
+  cancelAnimationFrame(mAnim);
+  ML = { th: +mTh.value, pos: +mPos.value };
+  pressM(-1);
+  drawMejor();
+}));
+pressM(0);
+
+/* ---------- 5. Parámetro C ---------- */
+const cvLab = document.getElementById("cv-lab");
+const lC = document.getElementById("l-c");
+const GAMMA = 0.5, GS = 0.1;
+const PRESETS = {
+  traslapados: () => OVERLAP.map(p => ({ ...p })),
+  separados: () => DATA.map(p => ({ ...p })),
+  vacio: () => []
+};
+const lab = { pts: PRESETS.traslapados(), add: 1, kernel: "linear" };
+
+function marching(vals, GW, GH, level) {
+  const segs = [];
+  for (let j = 0; j < GH - 1; j++) for (let i = 0; i < GW - 1; i++) {
+    const c4 = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]];
+    const v = c4.map(q => vals[q[1] * GW + q[0]] - level);
+    const cr = [];
+    for (let e = 0; e < 4; e++) {
+      const a = v[e], b = v[(e + 1) % 4];
+      if ((a < 0) !== (b < 0)) {
+        const t = a / (a - b), p = c4[e], q = c4[(e + 1) % 4];
+        cr.push({ x: (p[0] + (q[0] - p[0]) * t) * GS, y: (p[1] + (q[1] - p[1]) * t) * GS });
+      }
+    }
+    if (cr.length >= 2) segs.push([cr[0], cr[1]]);
+    if (cr.length === 4) segs.push([cr[2], cr[3]]);
+  }
+  return segs;
+}
+const plural = n => (n === 1 ? "1 dato" : n + " datos");
+
+function drawLab() {
+  const P = setup(cvLab, F_ABS), c = P.ctx, col = P.col, F = P.F;
+  const C = Math.pow(10, +lC.value);
+  document.getElementById("l-c-o").textContent = C < 1 ? fmt(C, 2) : C < 10 ? fmt(C, 1) : fmt(C, 0);
+  const msg = document.getElementById("l-msg");
+  const setStats = (e, s) => {
+    document.getElementById("l-err").textContent = e;
+    document.getElementById("l-sv").textContent = s;
+  };
+  if (!lab.pts.some(p => p.c === 1) || !lab.pts.some(p => p.c === 0)) {
+    axes(P);
+    lab.pts.forEach(p => point(P, p));
+    setStats("–", "–");
+    msg.className = "msg";
+    msg.textContent = "Agrega al menos un triángulo y un cuadrado.";
+    return;
+  }
+  const M = trainSVM(lab.pts, C, lab.kernel, GAMMA);
+  const GW = Math.round(F.xmax / GS) + 1, GH = Math.round(F.ymax / GS) + 1;
+  const vals = new Float64Array(GW * GH);
+  for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) vals[j * GW + i] = M.f(i * GS, j * GS);
+
+  const off = document.createElement("canvas");
+  off.width = GW; off.height = GH;
+  const o = off.getContext("2d"), img = o.createImageData(GW, GH);
+  const cb = hexRGB(col.blue), co = hexRGB(col.orange), cm = hexRGB(col.band);
+  for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
+    const v = vals[j * GW + i], k4 = ((GH - 1 - j) * GW + i) * 4;
+    const inM = lab.kernel === "rbf" && Math.abs(v) < 1;
+    const rgb = inM ? cm : v > 0 ? cb : co;
+    img.data[k4] = rgb[0]; img.data[k4 + 1] = rgb[1]; img.data[k4 + 2] = rgb[2]; img.data[k4 + 3] = inM ? 190 : 30;
+  }
+  o.putImageData(img, 0, 0);
+  c.imageSmoothingEnabled = true;
+  c.drawImage(off, P.X(0), P.Y(F.ymax), F.xmax * P.s, F.ymax * P.s);
+  axes(P);
+
+  if (lab.kernel === "linear") {
+    const nw = Math.hypot(M.w.x, M.w.y);
+    if (nw > 1e-9) {
+      const n = { x: M.w.x / nw, y: M.w.y / nw }, cc = -M.b / nw, h = 1 / nw;
+      band(P, n, cc - h, cc + h, 0.75);
+      strokeLine(P, n, cc - h, col.muted, 1.5, [6, 6]);
+      strokeLine(P, n, cc + h, col.muted, 1.5, [6, 6]);
+      strokeLine(P, n, cc, col.ink, 3.5);
+    }
+  } else {
+    P.clip();
+    [[-1, col.muted, 1.5], [1, col.muted, 1.5], [0, col.ink, 3.5]].forEach(([lev, color, w]) => {
+      c.strokeStyle = color; c.lineWidth = w; c.lineCap = "round";
+      c.beginPath();
+      marching(vals, GW, GH, lev).forEach(([a, b]) => { c.moveTo(P.X(a.x), P.Y(a.y)); c.lineTo(P.X(b.x), P.Y(b.y)); });
+      c.stroke();
+    });
+    c.restore();
+  }
+
+  let errs = 0;
+  lab.pts.forEach(p => {
+    const wrong = (p.c === 1 ? 1 : -1) * M.f(p.x, p.y) < 0;
+    if (wrong) errs++;
+    point(P, p, { cross: wrong });
+  });
+  setStats(errs, M.sv.length);
+
+  msg.className = "msg";
+  if (lab.kernel === "linear") {
+    if (errs) {
+      msg.className = "msg bad";
+      msg.textContent = "Ninguna línea recta es perfecta: " + plural(errs) + " mal clasificados (✕).";
+    } else msg.textContent = "La línea separa todo sin errores.";
+  } else if (errs) {
+    msg.textContent = "Todavía hay " + plural(errs) + " mal clasificados: sube C.";
+  } else {
+    msg.className = "msg good";
+    msg.textContent = "Medio raro, pero hace el trabajo: ningún dato mal clasificado.";
+  }
+}
+cvLab.addEventListener("click", ev => {
+  const P = cvLab._P, r = cvLab.getBoundingClientRect();
+  const q = P.inv(ev.clientX - r.left, ev.clientY - r.top);
+  if (q.x < 0 || q.x > P.F.xmax || q.y < 0 || q.y > P.F.ymax) return;
+  const hit = lab.pts.findIndex(p => Math.hypot(p.x - q.x, p.y - q.y) < 0.25);
+  if (hit >= 0) lab.pts.splice(hit, 1);
+  else lab.pts.push({ x: +q.x.toFixed(2), y: +q.y.toFixed(2), c: lab.add });
+  drawLab();
+});
+const press = (on, off) => { on.setAttribute("aria-pressed", "true"); off.setAttribute("aria-pressed", "false"); };
+const addT = document.getElementById("add-t"), addS = document.getElementById("add-s");
+addT.addEventListener("click", () => { lab.add = 1; press(addT, addS); });
+addS.addEventListener("click", () => { lab.add = 0; press(addS, addT); });
+const kLin = document.getElementById("k-lin"), kRbf = document.getElementById("k-rbf");
+kLin.addEventListener("click", () => { lab.kernel = "linear"; press(kLin, kRbf); drawLab(); });
+kRbf.addEventListener("click", () => { lab.kernel = "rbf"; lC.value = 2; press(kRbf, kLin); drawLab(); });
+document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => { lab.pts = PRESETS[b.dataset.preset](); drawLab(); }));
+lC.addEventListener("input", drawLab);
+
+/* ---------- 6. Préstamo ---------- */
+const cvPred = document.getElementById("cv-pred");
+const pNom = document.getElementById("p-nom"), pIng = document.getElementById("p-ing"), pDeu = document.getElementById("p-deu");
+const esc = s => s.replace(/[&<>"]/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+function drawPred() {
+  const P = setup(cvPred, F_BANK), col = P.col;
+  axes(P);
+  const n = { x: BW.x / BNORM, y: BW.y / BNORM }, cc = -BB / BNORM, h = 1 / BNORM;
+  band(P, n, cc - h, cc + h, 0.8);
+  strokeLine(P, n, cc - h, col.muted, 1.5, [6, 6]);
+  strokeLine(P, n, cc + h, col.muted, 1.5, [6, 6]);
+  strokeLine(P, n, cc, col.ink, 3.5);
+  BANK_PTS.forEach(p => point(P, p));
+
+  const ing = parseFloat(pIng.value), deu = parseFloat(pDeu.value);
+  const out = document.getElementById("p-out"), calc = document.getElementById("p-calc");
+  const nombre = pNom.value.trim() || "Cliente";
+  if (!isFinite(ing) || !isFinite(deu)) {
+    out.innerHTML = "<strong>Escribe números en ingreso y deuda.</strong>";
+    calc.textContent = "";
+    return;
+  }
+  const f = BB + BW.x * ing + BW.y * deu, ok = f > 0, safe = Math.abs(f) > 1;
+  const q = { x: Math.max(0, Math.min(P.F.xmax, ing)), y: Math.max(0, Math.min(P.F.ymax, deu)), c: ok ? 1 : 0 };
+  point(P, q, { big: true, ring: true });
+  tag(P, nombre, P.X(q.x) + P.r * 3.2, P.Y(q.y), "left");
+
+  out.innerHTML =
+    "<div>" + esc(nombre) + ", tu tarjeta está</div>" +
+    '<div class="big ' + (ok ? "a" : "r") + '">' + (ok ? "APROBADA" : "RECHAZADA") + "</div>" +
+    "<div>Decisión <strong>" + (safe ? "segura" : "dudosa (estás cerca de la línea)") + "</strong>.</div>" +
+    (ing >= 1000 ? '<div class="warn">Las cantidades van en miles: 45 = 45 mil.</div>' : "");
+  calc.textContent = "f(x) = " + fmt(BW.x, 4) + "·" + ing + " − " + fmt(-BW.y, 4) + "·" + deu + " − " + fmt(-BB, 3) +
+    " = " + fmt(f, 2);
+}
+[pNom, pIng, pDeu].forEach(i => i.addEventListener("input", drawPred));
+
+/* ---------- Navegación activa ---------- */
+const links = [...document.querySelectorAll("nav.top a")];
+if ("IntersectionObserver" in window) {
+  const io = new IntersectionObserver(es => {
+    es.forEach(e => {
+      if (!e.isIntersecting) return;
+      links.forEach(a => {
+        const on = a.getAttribute("href") === "#" + e.target.id;
+        a.classList.toggle("on", on);
+        if (on) a.closest("ol").scrollTo({ left: a.offsetLeft - 40, behavior: "smooth" });
+      });
+    });
+  }, { rootMargin: "-45% 0px -50% 0px" });
+  document.querySelectorAll("#inicio, main section").forEach(s => io.observe(s));
+}
+
+/* ---------- Render general ---------- */
+function drawAll() { drawStory(stK, 1); drawLineas(); drawMejor(); drawLab(); drawPred(); }
+storyGo(0, false);
+drawAll();
+let rt;
+window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(drawAll, 120); });
+const mq = window.matchMedia("(prefers-color-scheme: dark)");
+if (mq.addEventListener) mq.addEventListener("change", drawAll);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
+})();
+</script>
+</body>
+</html>
