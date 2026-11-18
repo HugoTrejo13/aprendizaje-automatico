@@ -1,0 +1,1691 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redes Transformer — Presentación Interactiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f6fb;
+  --bg-accent: radial-gradient(circle at 12% 10%, rgba(79, 70, 229, 0.10), transparent 42%),
+               radial-gradient(circle at 88% 85%, rgba(14, 165, 233, 0.10), transparent 45%);
+  --surface: #ffffff;
+  --surface-2: #eef2ff;
+  --surface-muted: #f8fafc;
+  --ink: #0f172a;
+  --muted: #475569;
+  --line: #dbe3ef;
+  --primary: #4f46e5;
+  --primary-soft: rgba(79, 70, 229, 0.12);
+  --cyan: #0284c7;
+  --cyan-soft: rgba(2, 132, 199, 0.12);
+  --amber: #d97706;
+  --amber-soft: rgba(217, 119, 6, 0.13);
+  --pink: #db2777;
+  --pink-soft: rgba(219, 39, 119, 0.12);
+  --good: #059669;
+  --good-soft: rgba(5, 150, 105, 0.13);
+  --bad: #dc2626;
+  --bad-soft: rgba(220, 38, 38, 0.12);
+  --shadow: 0 18px 45px -18px rgba(15, 23, 42, 0.14);
+  --radius: 20px;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b1120;
+  --bg-accent: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.18), transparent 45%),
+               radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.15), transparent 45%);
+  --surface: #131c31;
+  --surface-2: #1c2742;
+  --surface-muted: #0f172a;
+  --ink: #f1f5f9;
+  --muted: #94a3b8;
+  --line: #273552;
+  --primary: #818cf8;
+  --primary-soft: rgba(129, 140, 248, 0.18);
+  --cyan: #38bdf8;
+  --cyan-soft: rgba(56, 189, 248, 0.16);
+  --amber: #fbbf24;
+  --amber-soft: rgba(251, 191, 36, 0.16);
+  --pink: #f472b6;
+  --pink-soft: rgba(244, 114, 182, 0.16);
+  --good: #34d399;
+  --good-soft: rgba(52, 211, 153, 0.18);
+  --bad: #f87171;
+  --bad-soft: rgba(248, 113, 113, 0.18);
+  --shadow: 0 22px 50px -16px rgba(0, 0, 0, 0.55);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background-color: var(--bg);
+  background-image: var(--bg-accent);
+  color: var(--ink);
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: "Bricolage Grotesque", "Plus Jakarta Sans", system-ui, sans-serif;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top Bar */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+
+.progress-track {
+  height: 4px;
+  background: var(--line);
+  width: 100%;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--cyan));
+  width: 14.28%;
+  transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.topbar-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.brand-badge {
+  background: var(--primary-soft);
+  color: var(--primary);
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.slide-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.slide-pill {
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.slide-pill:hover {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.slide-pill.active {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  padding: 6px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.15s ease, border-color 0.2s ease;
+}
+
+.icon-btn:hover {
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* Main Stage */
+.stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 18px 88px;
+}
+
+.deck {
+  width: 100%;
+  max-width: 1060px;
+}
+
+.slide {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: clamp(22px, 3.6vw, 40px);
+  animation: slideIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.slide.active {
+  display: block;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.992); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.slide-title {
+  font-size: clamp(1.55rem, 3vw, 2.3rem);
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+.slide-lead {
+  color: var(--muted);
+  font-size: clamp(0.98rem, 1.4vw, 1.1rem);
+  margin: 0 0 22px;
+  max-width: 72ch;
+}
+
+/* Shared Cards & Grids */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.card {
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px 18px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--cyan));
+  color: #ffffff;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--primary) 65%, transparent);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.btn-soft {
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 11px;
+  font-size: 0.88rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+
+.btn-soft:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.btn-soft.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* Slide 1: Hero */
+.hero-wrap {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.hero-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.08;
+  margin-bottom: 14px;
+}
+
+.hero-highlight {
+  background: linear-gradient(120deg, var(--primary), var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-fact {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--amber-soft);
+  border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent);
+  font-size: 0.92rem;
+  margin: 16px 0 22px;
+}
+
+.hero-visual {
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  text-align: center;
+}
+
+.hero-pill-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.mini-stat {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.84rem;
+}
+
+.mini-stat strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--primary);
+}
+
+/* Slide 2: RNN vs Transformer Simulator */
+.sim-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.word-stream {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 14px 0;
+  min-height: 82px;
+  align-content: flex-start;
+}
+
+.sim-word {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.28s ease;
+}
+
+.sim-word.rnn-dim {
+  opacity: 0.25;
+  transform: scale(0.95);
+}
+
+.sim-word.rnn-beam {
+  background: var(--amber);
+  color: #111827;
+  border-color: var(--amber);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--amber) 65%, transparent);
+  transform: scale(1.08);
+  opacity: 1;
+}
+
+.sim-word.tf-lit {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+.sim-word.tf-linked {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.status-tag {
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.status-bad { background: var(--bad-soft); color: var(--bad); }
+.status-good { background: var(--good-soft); color: var(--good); }
+
+/* Slide 3: Self-Attention Arc Explorer */
+.att-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.att-stage {
+  position: relative;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 118px 18px 22px;
+  overflow: hidden;
+}
+
+.att-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.att-words {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.att-word {
+  padding: 7px 11px;
+  border-radius: 11px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  font-weight: 700;
+  font-size: 0.91rem;
+  transition: all 0.2s ease;
+}
+
+.att-word:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.att-word.selected {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.att-word.target-high {
+  border-color: var(--cyan);
+  background: var(--cyan-soft);
+}
+
+.att-explain {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 0.93rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Slide 4: Q K V */
+.qkv-queries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.video-card {
+  background: var(--surface-muted);
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  padding: 15px;
+  transition: all 0.28s ease;
+}
+
+.video-card.winner {
+  background: var(--surface);
+  border-color: var(--good);
+  box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--good) 45%, transparent);
+  transform: translateY(-3px);
+}
+
+.video-card.dimmed {
+  opacity: 0.65;
+}
+
+.bar-track {
+  height: 10px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 10px 0 6px;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), var(--good));
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qkv-legend {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Slide 5: Pipeline */
+.pipe-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.pipe-tab {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: 1.5px solid var(--line);
+  background: var(--surface-muted);
+  transition: all 0.2s ease;
+}
+
+.pipe-tab:hover { border-color: var(--primary); }
+
+.pipe-tab.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.pipe-tab small {
+  display: block;
+  font-size: 0.72rem;
+  opacity: 0.8;
+  font-weight: 700;
+}
+
+.pipe-tab strong {
+  font-size: 0.88rem;
+}
+
+.pipe-stage {
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  min-height: 225px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.token-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1.5px solid var(--primary);
+  font-weight: 700;
+}
+
+.token-chip span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Slide 6: Encoder vs Decoder */
+.arch-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.arch-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 22px 16px;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.arch-box {
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 2px solid var(--line);
+  background: var(--surface);
+  text-align: center;
+  min-width: 148px;
+  transition: all 0.25s ease;
+}
+
+.arch-box.lit-enc {
+  border-color: var(--cyan);
+  background: var(--cyan-soft);
+}
+
+.arch-box.lit-dec {
+  border-color: var(--pink);
+  background: var(--pink-soft);
+}
+
+.arch-box.off {
+  opacity: 0.35;
+  filter: grayscale(0.7);
+}
+
+.arch-arrow {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+/* Slide 7: Summary + Quiz */
+.quiz-item {
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.quiz-q {
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 8px;
+}
+
+.quiz-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.quiz-opt {
+  padding: 6px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.quiz-opt:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+
+.quiz-opt.correct {
+  background: var(--good);
+  color: #ffffff;
+  border-color: var(--good);
+}
+
+.quiz-opt.wrong {
+  background: var(--bad);
+  color: #ffffff;
+  border-color: var(--bad);
+}
+
+.quiz-feedback {
+  font-size: 0.8rem;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+/* Bottom Navigation Footer */
+.bottom-nav {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.nav-btn {
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.86rem;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  transition: all 0.15s ease;
+}
+
+.nav-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.nav-btn.next {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.nav-btn.next:hover:not(:disabled) {
+  color: #ffffff;
+  filter: brightness(1.08);
+}
+
+.slide-counter {
+  font-weight: 700;
+  font-size: 0.86rem;
+  color: var(--muted);
+  min-width: 52px;
+  text-align: center;
+}
+
+/* Pulse animation for hero SVG */
+@keyframes pulseNode {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+.pulse-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulseNode 2.6s ease-in-out infinite;
+}
+
+/* Responsive */
+@media (max-width: 840px) {
+  .hero-wrap, .grid-2, .grid-3, .qkv-legend { grid-template-columns: 1fr; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .pipe-steps { grid-template-columns: repeat(2, 1fr); }
+  .slide-pills { display: none; }
+}
+
+@media (max-width: 520px) {
+  .grid-4, .pipe-steps { grid-template-columns: 1fr; }
+  .att-stage { padding-top: 105px; }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="topbar-inner">
+      <div class="brand">
+        <span>🤖 Redes Transformer</span>
+        <span class="brand-badge">Aprendizaje Automático</span>
+      </div>
+
+      <nav class="slide-pills" id="slidePills" aria-label="Diapositivas">
+        <button class="slide-pill active" data-slide="0">1. ¿Qué es?</button>
+        <button class="slide-pill" data-slide="1">2. Linterna vs Luz</button>
+        <button class="slide-pill" data-slide="2">3. Atención</button>
+        <button class="slide-pill" data-slide="3">4. Q · K · V</button>
+        <button class="slide-pill" data-slide="4">5. Paso a paso</button>
+        <button class="slide-pill" data-slide="5">6. Encoder/Decoder</button>
+        <button class="slide-pill" data-slide="6">7. Resumen &amp; Quiz</button>
+      </nav>
+
+      <div class="topbar-actions">
+        <button class="icon-btn" id="themeToggle" title="Cambiar tema">🌙 Oscuro</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Slides Stage -->
+  <main class="stage">
+    <div class="deck">
+
+      <!-- SLIDE 1: PORTADA -->
+      <section class="slide active" data-index="0">
+        <div class="hero-wrap">
+          <div>
+            <span class="eyebrow">Diapositiva 1 · Introducción</span>
+            <h1 class="hero-title">¿Qué es una <span class="hero-highlight">Red Transformer</span>?</h1>
+            <p class="slide-lead">
+              Es una arquitectura de inteligencia artificial que aprende a entender y generar texto, imágenes o audio mirando <strong>todas las piezas al mismo tiempo</strong> y conectando las que tienen relación.
+            </p>
+            <div class="hero-fact">
+              <span>💡</span>
+              <div>
+                <strong>Dato para la clase:</strong> Nació en <strong>2017</strong> con el artículo de Google <em>"Attention Is All You Need"</em>. La <strong>"T"</strong> de ChatGP<strong>T</strong> significa exactamente <strong>Transformer</strong>.
+              </div>
+            </div>
+            <button class="btn-primary" onclick="goToSlide(1)">Empezar recorrido interactivo →</button>
+          </div>
+
+          <div class="hero-visual">
+            <svg viewBox="0 0 320 220" width="100%" aria-label="Red de conexiones Transformer">
+              <defs>
+                <linearGradient id="gLine" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#4f46e5"/>
+                  <stop offset="100%" stop-color="#0284c7"/>
+                </linearGradient>
+              </defs>
+              <!-- All-to-all attention lines -->
+              <g stroke="url(#gLine)" stroke-opacity="0.35" stroke-width="2">
+                <line x1="160" y1="110" x2="55" y2="45"/>
+                <line x1="160" y1="110" x2="265" y2="45"/>
+                <line x1="160" y1="110" x2="55" y2="175"/>
+                <line x1="160" y1="110" x2="265" y2="175"/>
+                <line x1="55" y1="45" x2="265" y2="45"/>
+                <line x1="55" y1="175" x2="265" y2="175"/>
+                <line x1="55" y1="45" x2="55" y2="175"/>
+                <line x1="265" y1="45" x2="265" y2="175"/>
+              </g>
+              <!-- Outer nodes -->
+              <g class="pulse-dot">
+                <circle cx="55" cy="45" r="26" fill="var(--surface)" stroke="var(--cyan)" stroke-width="2.5"/>
+                <text x="55" y="49" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">ChatGPT</text>
+              </g>
+              <g class="pulse-dot" style="animation-delay: 0.5s">
+                <circle cx="265" cy="45" r="26" fill="var(--surface)" stroke="var(--primary)" stroke-width="2.5"/>
+                <text x="265" y="49" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">Gemini</text>
+              </g>
+              <g class="pulse-dot" style="animation-delay: 1s">
+                <circle cx="55" cy="175" r="26" fill="var(--surface)" stroke="var(--amber)" stroke-width="2.5"/>
+                <text x="55" y="179" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)">Traductor</text>
+              </g>
+              <g class="pulse-dot" style="animation-delay: 1.5s">
+                <circle cx="265" cy="175" r="26" fill="var(--surface)" stroke="var(--pink)" stroke-width="2.5"/>
+                <text x="265" y="179" text-anchor="middle" font-size="11" font-weight="700" fill="var(--ink)">Código</text>
+              </g>
+              <!-- Center hub -->
+              <rect x="104" y="84" width="112" height="52" rx="16" fill="url(#gLine)"/>
+              <text x="160" y="108" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">Transformer</text>
+              <text x="160" y="124" text-anchor="middle" font-size="9.5" font-weight="600" fill="#e0e7ff">Todo conectado</text>
+            </svg>
+            <div class="hero-pill-row">
+              <div class="mini-stat"><strong>⚡ En paralelo</strong>Lee todo de golpe</div>
+              <div class="mini-stat"><strong>🎯 Self-Attention</strong>Entiende el contexto</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: LINTERNA VS LUZ -->
+      <section class="slide" data-index="1">
+        <span class="eyebrow">Diapositiva 2 · ¿Por qué cambió la IA?</span>
+        <h2 class="slide-title">Antes (Linterna) vs. Transformer (Encender la luz)</h2>
+        <p class="slide-lead">
+          Las redes antiguas (<strong>RNN / LSTM</strong>) leían palabra por palabra en fila y olvidaban el inicio. El Transformer prende la luz de todo el cuarto al instante.
+        </p>
+
+        <div class="sim-controls">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn-primary" id="runSimBtn" onclick="runComparisonSim()">▶ Simular lectura</button>
+            <button class="btn-soft" onclick="resetComparisonSim()">↺ Reiniciar</button>
+          </div>
+          <span style="font-size:0.86rem; color:var(--muted);">Presiona <strong>Simular</strong> para ver la diferencia de velocidad y memoria</span>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <h3 style="font-size:1.1rem;">🔦 Redes Antiguas (RNN)</h3>
+              <span class="status-tag status-bad" id="rnnStatus">En espera</span>
+            </div>
+            <div class="word-stream" id="rnnStream"></div>
+            <p style="margin:0; font-size:0.86rem; color:var(--muted);">
+              Va paso a paso como mirar por un tubito. Al llegar al final, las primeras palabras (<em>"El perro"</em>) se van borrando de su memoria.
+            </p>
+          </div>
+
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <h3 style="font-size:1.1rem;">💡 Red Transformer</h3>
+              <span class="status-tag status-good" id="tfStatus">En espera</span>
+            </div>
+            <div class="word-stream" id="tfStream"></div>
+            <p style="margin:0; font-size:0.86rem; color:var(--muted);">
+              Procesa todas las palabras en paralelo (ideal para tarjetas gráficas GPU). Recuerda toda la frase sin perder detalles.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: SELF-ATTENTION INTERACTIVO -->
+      <section class="slide" data-index="2">
+        <span class="eyebrow">Diapositiva 3 · El Superpoder</span>
+        <h2 class="slide-title">Self-Attention: ¿A qué palabra le pongo atención?</h2>
+        <p class="slide-lead">
+          Cambia la última palabra o haz clic en cualquier palabra (prueba <strong>"estaba"</strong>) para ver cómo cambian los hilos invisibles de significado.
+        </p>
+
+        <div class="att-toolbar">
+          <button class="btn-soft active" id="sentBtnA" onclick="setSentence('A')">🐶 Caso A: "...muy cansado"</button>
+          <button class="btn-soft" id="sentBtnB" onclick="setSentence('B')">🛣️ Caso B: "...muy ancha"</button>
+          <span style="margin-left:auto; font-size:0.84rem; color:var(--muted);">Tip: haz clic en cualquier palabra</span>
+        </div>
+
+        <div class="att-stage" id="attStage">
+          <svg class="att-svg" id="attSvg"></svg>
+          <div class="att-words" id="attWords"></div>
+        </div>
+
+        <div class="att-explain" id="attExplain">
+          <div>Haz clic en una palabra para ver sus conexiones.</div>
+          <span class="brand-badge">Multi-Head = varios "ojos" buscando relaciones</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 4: Q, K, V -->
+      <section class="slide" data-index="3">
+        <span class="eyebrow">Diapositiva 4 · La fórmula sin miedo</span>
+        <h2 class="slide-title">¿Cómo calcula la atención? Q, K y V como YouTube 🔍</h2>
+        <p class="slide-lead">
+          Elige una búsqueda (<strong>Query</strong>) para ver cómo el Transformer compara tu pregunta contra las etiquetas (<strong>Key</strong>) y extrae el contenido útil (<strong>Value</strong>).
+        </p>
+
+        <div class="qkv-queries">
+          <button class="btn-soft active" onclick="selectQuery(0, this)">🎂 Q: "Receta de pastel"</button>
+          <button class="btn-soft" onclick="selectQuery(1, this)">⚽ Q: "Mejores goles de hoy"</button>
+          <button class="btn-soft" onclick="selectQuery(2, this)">🐶 Q: "Cómo entrenar un perro"</button>
+        </div>
+
+        <div class="grid-3" id="qkvCards"></div>
+
+        <div class="qkv-legend">
+          <div class="card" style="padding:12px 14px;">
+            <strong style="color:var(--primary);">Q = Query (Consulta)</strong>
+            <div style="font-size:0.84rem; color:var(--muted);">Lo que tú escribes en el buscador para pedir información.</div>
+          </div>
+          <div class="card" style="padding:12px 14px;">
+            <strong style="color:var(--cyan);">K = Key (Etiqueta)</strong>
+            <div style="font-size:0.84rem; color:var(--muted);">El título de cada elemento; sirve para comparar si coincide con Q.</div>
+          </div>
+          <div class="card" style="padding:12px 14px;">
+            <strong style="color:var(--good);">V = Value (Contenido)</strong>
+            <div style="font-size:0.84rem; color:var(--muted);">La información real que te llevas cuando Q y K hacen buen "match".</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 5: PIPELINE PASO A PASO -->
+      <section class="slide" data-index="4">
+        <span class="eyebrow">Diapositiva 5 · Por dentro</span>
+        <h2 class="slide-title">El viaje de una frase paso a paso</h2>
+        <p class="slide-lead">
+          Recorre las 5 estaciones por las que pasa la frase <strong>"El perro ladra"</strong> antes de generar una respuesta.
+        </p>
+
+        <div class="pipe-steps" id="pipeTabs">
+          <button class="pipe-tab active" onclick="setPipeStep(0)"><small>PASO 1</small><strong>Tokenización</strong></button>
+          <button class="pipe-tab" onclick="setPipeStep(1)"><small>PASO 2</small><strong>Embeddings</strong></button>
+          <button class="pipe-tab" onclick="setPipeStep(2)"><small>PASO 3</small><strong>Posición</strong></button>
+          <button class="pipe-tab" onclick="setPipeStep(3)"><small>PASO 4</small><strong>Self-Attention</strong></button>
+          <button class="pipe-tab" onclick="setPipeStep(4)"><small>PASO 5</small><strong>Salida</strong></button>
+        </div>
+
+        <div class="pipe-stage" id="pipeStage"></div>
+      </section>
+
+      <!-- SLIDE 6: ENCODER VS DECODER -->
+      <section class="slide" data-index="5">
+        <span class="eyebrow">Diapositiva 6 · Familias de modelos</span>
+        <h2 class="slide-title">Las dos mitades: Encoder (Lector) y Decoder (Escritor)</h2>
+        <p class="slide-lead">
+          Según la tarea, las IAs modernas usan solo una mitad o combinan ambas. Haz clic para explorar cada arquitectura:
+        </p>
+
+        <div class="arch-tabs" id="archTabs">
+          <button class="btn-soft active" onclick="setArchMode('enc', this)">📖 Solo Encoder (BERT)</button>
+          <button class="btn-soft" onclick="setArchMode('dec', this)">✍️ Solo Decoder (GPT / Gemini)</button>
+          <button class="btn-soft" onclick="setArchMode('both', this)">🌐 Encoder + Decoder (Traductor)</button>
+        </div>
+
+        <div class="arch-diagram" id="archDiagram"></div>
+        <div class="card" id="archInfo"></div>
+      </section>
+
+      <!-- SLIDE 7: RESUMEN Y MINI QUIZ -->
+      <section class="slide" data-index="6">
+        <span class="eyebrow">Diapositiva 7 · Cierre</span>
+        <h2 class="slide-title">Resumen en 10 segundos y Mini Quiz 🎯</h2>
+        <p class="slide-lead">
+          Lo esencial para recordar o exponer en clase, más 3 preguntas rápidas para comprobar que quedó clarísimo.
+        </p>
+
+        <div class="grid-2">
+          <div>
+            <div class="grid-2" style="gap:10px;">
+              <div class="card">
+                <strong style="color:var(--primary);">1. Origen (2017)</strong>
+                <p style="margin:6px 0 0; font-size:0.86rem; color:var(--muted);">Paper de Google <em>"Attention Is All You Need"</em>. Hoy mueve texto, imagen, audio y video.</p>
+              </div>
+              <div class="card">
+                <strong style="color:var(--cyan);">2. En paralelo</strong>
+                <p style="margin:6px 0 0; font-size:0.86rem; color:var(--muted);">Lee toda la entrada a la vez, no palabra por palabra. Mucho más rápido y con mejor memoria.</p>
+              </div>
+              <div class="card">
+                <strong style="color:var(--amber);">3. Self-Attention</strong>
+                <p style="margin:6px 0 0; font-size:0.86rem; color:var(--muted);">Conecta palabras clave usando <strong>Q</strong> (consulta), <strong>K</strong> (etiqueta) y <strong>V</strong> (valor).</p>
+              </div>
+              <div class="card">
+                <strong style="color:var(--good);">4. Base de la IA actual</strong>
+                <p style="margin:6px 0 0; font-size:0.86rem; color:var(--muted);">Encoder clasifica (BERT); Decoder genera respuestas palabra por palabra (ChatGPT, Gemini).</p>
+              </div>
+            </div>
+            <div class="card" style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <span style="font-size:0.88rem; font-weight:700;">Tu puntuación en el quiz:</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="brand-badge" id="quizScore" style="font-size:0.95rem;">0 / 3</span>
+                <button class="btn-soft" style="padding:5px 10px; font-size:0.8rem;" onclick="resetQuiz()">↺ Reiniciar</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="quizContainer"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Floating Bottom Nav -->
+  <footer class="bottom-nav">
+    <button class="nav-btn" id="prevBtn" onclick="prevSlide()">← Anterior</button>
+    <span class="slide-counter" id="slideCounter">1 / 7</span>
+    <button class="nav-btn next" id="nextBtn" onclick="nextSlide()">Siguiente →</button>
+  </footer>
+</div>
+
+<script>
+/* ---------------- THEME TOGGLE ---------------- */
+const themeToggle = document.getElementById('themeToggle');
+const root = document.documentElement;
+themeToggle.addEventListener('click', () => {
+  const isDark = root.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    root.removeAttribute('data-theme');
+    themeToggle.textContent = '🌙 Oscuro';
+  } else {
+    root.setAttribute('data-theme', 'dark');
+    themeToggle.textContent = '☀️ Claro';
+  }
+});
+
+/* ---------------- SLIDE NAVIGATION ---------------- */
+const slides = Array.from(document.querySelectorAll('.slide'));
+const pills = Array.from(document.querySelectorAll('.slide-pill'));
+const progressFill = document.getElementById('progressFill');
+const slideCounter = document.getElementById('slideCounter');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+let currentSlide = 0;
+
+function goToSlide(idx) {
+  currentSlide = Math.max(0, Math.min(slides.length - 1, idx));
+  slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+  pills.forEach((p, i) => p.classList.toggle('active', i === currentSlide));
+  progressFill.style.width = (((currentSlide + 1) / slides.length) * 100) + '%';
+  slideCounter.textContent = (currentSlide + 1) + ' / ' + slides.length;
+  prevBtn.disabled = currentSlide === 0;
+  nextBtn.disabled = currentSlide === slides.length - 1;
+  history.replaceState(null, '', '#slide=' + (currentSlide + 1));
+
+  if (currentSlide === 2) {
+    requestAnimationFrame(() => drawAttentionArcs());
+  }
+}
+
+function nextSlide() { goToSlide(currentSlide + 1); }
+function prevSlide() { goToSlide(currentSlide - 1); }
+
+pills.forEach(p => {
+  p.addEventListener('click', () => goToSlide(Number(p.dataset.slide)));
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') nextSlide();
+  if (e.key === 'ArrowLeft') prevSlide();
+});
+
+/* ---------------- SLIDE 2: RNN vs TRANSFORMER SIM ---------------- */
+const simWords = ['El', 'perro', 'rápido', 'cruzó', 'la', 'calle', 'porque', 'estaba', 'cansado'];
+const rnnStream = document.getElementById('rnnStream');
+const tfStream = document.getElementById('tfStream');
+const rnnStatus = document.getElementById('rnnStatus');
+const tfStatus = document.getElementById('tfStatus');
+let simTimer = null;
+
+function buildSimStreams() {
+  rnnStream.innerHTML = simWords.map((w, i) => `<span class="sim-word" data-i="${i}">${w}</span>`).join('');
+  tfStream.innerHTML = simWords.map((w, i) => `<span class="sim-word" data-i="${i}">${w}</span>`).join('');
+}
+
+function resetComparisonSim() {
+  if (simTimer) clearInterval(simTimer);
+  simTimer = null;
+  buildSimStreams();
+  rnnStatus.textContent = 'En espera';
+  tfStatus.textContent = 'En espera';
+}
+
+function runComparisonSim() {
+  resetComparisonSim();
+  const rnnEls = Array.from(rnnStream.querySelectorAll('.sim-word'));
+  const tfEls = Array.from(tfStream.querySelectorAll('.sim-word'));
+
+  // Transformer lights up everything in 1 instant step
+  setTimeout(() => {
+    tfEls.forEach((el, idx) => {
+      el.classList.add(idx === 1 || idx === 7 || idx === 8 ? 'tf-linked' : 'tf-lit');
+    });
+    tfStatus.textContent = '¡1 paso! Todo leído a la vez';
+  }, 120);
+
+  // RNN goes sequentially word by word and forgets the start
+  let step = 0;
+  rnnStatus.textContent = 'Paso 1/' + simWords.length + ' (en fila...)';
+  simTimer = setInterval(() => {
+    rnnEls.forEach((el, idx) => {
+      el.classList.remove('rnn-beam', 'rnn-dim');
+      if (idx === step) {
+        el.classList.add('rnn-beam');
+        el.style.opacity = '1';
+      } else if (idx < step) {
+        el.classList.add('rnn-dim');
+        el.style.opacity = String(Math.max(0.16, 1 - (step - idx) * 0.13));
+      }
+    });
+    rnnStatus.textContent = `Paso ${step + 1}/${simWords.length} — olvidando el inicio`;
+    step++;
+    if (step >= simWords.length) {
+      clearInterval(simTimer);
+      simTimer = null;
+      rnnStatus.textContent = 'Terminó en 9 pasos (memoria débil)';
+    }
+  }, 360);
+}
+buildSimStreams();
+
+/* ---------------- SLIDE 3: SELF-ATTENTION ARCS ---------------- */
+const attentionData = {
+  A: {
+    words: ['El', 'perro', 'no', 'cruzó', 'la', 'calle', 'porque', 'estaba', 'muy', 'cansado'],
+    defaultIdx: 7,
+    weights: {
+      0: { 1: 85, 3: 15 },
+      1: { 0: 20, 3: 55, 7: 70, 9: 80 },
+      2: { 3: 90, 7: 25 },
+      3: { 1: 88, 2: 65, 5: 80 },
+      4: { 5: 90 },
+      5: { 4: 35, 3: 65, 7: 10 },
+      6: { 3: 55, 7: 75 },
+      7: { 1: 90, 5: 5, 9: 78 },
+      8: { 9: 92, 7: 30 },
+      9: { 1: 88, 7: 72, 8: 55 }
+    },
+    notes: {
+      7: 'En este caso, <strong>"estaba"</strong> conecta al <strong>90% con "perro"</strong> y solo 5% con "calle" gracias a la palabra <strong>"cansado"</strong>.'
+    }
+  },
+  B: {
+    words: ['El', 'perro', 'no', 'cruzó', 'la', 'calle', 'porque', 'estaba', 'muy', 'ancha'],
+    defaultIdx: 7,
+    weights: {
+      0: { 1: 85, 3: 15 },
+      1: { 0: 20, 3: 80 },
+      2: { 3: 90 },
+      3: { 1: 85, 2: 65, 5: 80 },
+      4: { 5: 90 },
+      5: { 4: 30, 7: 82, 9: 88 },
+      6: { 3: 55, 7: 75 },
+      7: { 5: 92, 1: 6, 9: 80 },
+      8: { 9: 92, 7: 30 },
+      9: { 5: 90, 7: 74, 8: 50 }
+    },
+    notes: {
+      7: '¡Cambió el significado! Ahora <strong>"estaba"</strong> apunta al <strong>92% hacia "calle"</strong> (y solo 6% a "perro") porque dice <strong>"ancha"</strong>.'
+    }
+  }
+};
+
+let currentSent = 'A';
+let selectedWordIdx = 7;
+
+function setSentence(mode) {
+  currentSent = mode;
+  document.getElementById('sentBtnA').classList.toggle('active', mode === 'A');
+  document.getElementById('sentBtnB').classList.toggle('active', mode === 'B');
+  selectedWordIdx = attentionData[mode].defaultIdx;
+  renderAttentionWords();
+  requestAnimationFrame(drawAttentionArcs);
+}
+
+function renderAttentionWords() {
+  const container = document.getElementById('attWords');
+  const words = attentionData[currentSent].words;
+  const targets = attentionData[currentSent].weights[selectedWordIdx] || {};
+  container.innerHTML = words.map((w, i) => {
+    const cls = i === selectedWordIdx
+      ? 'att-word selected'
+      : (targets[i] >= 60 ? 'att-word target-high' : 'att-word');
+    return `<button class="${cls}" data-idx="${i}" onclick="selectAttWord(${i})">${w}</button>`;
+  }).join('');
+
+  const explainEl = document.getElementById('attExplain');
+  const customNote = attentionData[currentSent].notes[selectedWordIdx];
+  if (customNote) {
+    explainEl.firstElementChild.innerHTML = customNote;
+  } else {
+    const topTargets = Object.entries(targets)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(([idx, pct]) => `<strong>"${words[idx]}" (${pct}%)</strong>`)
+      .join(' y ');
+    explainEl.firstElementChild.innerHTML = `La palabra <strong>"${words[selectedWordIdx]}"</strong> presta mayor atención a ${topTargets || 'su contexto cercano'}.`;
+  }
+}
+
+function selectAttWord(idx) {
+  selectedWordIdx = idx;
+  renderAttentionWords();
+  requestAnimationFrame(drawAttentionArcs);
+}
+
+function drawAttentionArcs() {
+  const stage = document.getElementById('attStage');
+  const svg = document.getElementById('attSvg');
+  const btns = Array.from(document.querySelectorAll('#attWords .att-word'));
+  if (!btns.length || stage.offsetParent === null) return;
+
+  const sRect = stage.getBoundingClientRect();
+  svg.setAttribute('viewBox', `0 0 ${sRect.width} ${sRect.height}`);
+  svg.innerHTML = '';
+
+  const srcBtn = btns[selectedWordIdx];
+  if (!srcBtn) return;
+  const srcRect = srcBtn.getBoundingClientRect();
+  const x1 = srcRect.left + srcRect.width / 2 - sRect.left;
+  const y1 = srcRect.top - sRect.top;
+
+  const targets = attentionData[currentSent].weights[selectedWordIdx] || {};
+  Object.entries(targets).forEach(([tIdxStr, weight]) => {
+    const tIdx = Number(tIdxStr);
+    const dstBtn = btns[tIdx];
+    if (!dstBtn) return;
+    const dstRect = dstBtn.getBoundingClientRect();
+    const x2 = dstRect.left + dstRect.width / 2 - sRect.left;
+    const y2 = dstRect.top - sRect.top;
+
+    const dist = Math.abs(x2 - x1);
+    const arcHeight = Math.min(96, 26 + dist * 0.24);
+    const cx = (x1 + x2) / 2;
+    const cy = Math.max(14, Math.min(y1, y2) - arcHeight);
+
+    const isStrong = weight >= 50;
+    const strokeColor = isStrong ? 'var(--primary)' : 'var(--muted)';
+    const strokeWidth = Math.max(1.5, (weight / 100) * 6.5);
+    const opacity = isStrong ? 0.9 : 0.4;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', strokeColor);
+    path.setAttribute('stroke-width', strokeWidth);
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('opacity', opacity);
+    if (!isStrong) path.setAttribute('stroke-dasharray', '5 4');
+    svg.appendChild(path);
+
+    // Midpoint label pill for quadratic Bezier (t = 0.5 -> 0.25*P0 + 0.5*C + 0.25*P1)
+    const lx = 0.25 * x1 + 0.5 * cx + 0.25 * x2;
+    const ly = 0.25 * y1 + 0.5 * cy + 0.25 * y2;
+
+    const badgeBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    badgeBg.setAttribute('x', lx - 18);
+    badgeBg.setAttribute('y', ly - 10);
+    badgeBg.setAttribute('width', 36);
+    badgeBg.setAttribute('height', 19);
+    badgeBg.setAttribute('rx', 9);
+    badgeBg.setAttribute('fill', isStrong ? 'var(--primary)' : 'var(--surface)');
+    badgeBg.setAttribute('stroke', isStrong ? 'var(--primary)' : 'var(--line)');
+    svg.appendChild(badgeBg);
+
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', lx);
+    text.setAttribute('y', ly + 3);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('font-size', '10.5');
+    text.setAttribute('font-weight', '700');
+    text.setAttribute('fill', isStrong ? '#ffffff' : 'var(--muted)');
+    text.textContent = weight + '%';
+    svg.appendChild(text);
+  });
+}
+
+window.addEventListener('resize', () => {
+  if (currentSlide === 2) drawAttentionArcs();
+});
+renderAttentionWords();
+
+/* ---------------- SLIDE 4: Q, K, V YOUTUBE ANALOGY ---------------- */
+const qkvVideos = [
+  { key: '🎂 Cómo hacer pastel de chocolate fácil', value: 'Receta paso a paso: harina, huevo, cacao y horno 35 min.', scores: [92, 3, 5] },
+  { key: '⚽ Resumen y golazos de la jornada', value: 'Video con las 10 mejores jugadas y tiros libres de hoy.', scores: [2, 94, 4] },
+  { key: '🐶 Guía básica para cuidar tu cachorro', value: 'Consejos de comida, paseos y trucos para enseñarle a sentarse.', scores: [6, 3, 91] }
+];
+
+function selectQuery(qIdx, btnEl) {
+  if (btnEl) {
+    document.querySelectorAll('.qkv-queries .btn-soft').forEach(b => b.classList.remove('active'));
+    btnEl.classList.add('active');
+  }
+  const container = document.getElementById('qkvCards');
+  container.innerHTML = qkvVideos.map((vid, i) => {
+    const score = vid.scores[qIdx];
+    const isWin = score >= 80;
+    return `
+      <div class="video-card ${isWin ? 'winner' : 'dimmed'}">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <span style="font-size:0.75rem; font-weight:700; color:var(--cyan);">KEY (Título)</span>
+          <span class="status-tag ${isWin ? 'status-good' : ''}" style="${isWin ? '' : 'background:var(--surface); color:var(--muted);'}">
+            ${score}% atención
+          </span>
+        </div>
+        <h4 style="margin:6px 0; font-size:0.96rem;">${vid.key}</h4>
+        <div class="bar-track"><div class="bar-fill" style="width:${score}%"></div></div>
+        <div style="font-size:0.82rem; color:var(--muted); margin-top:8px;">
+          <strong style="color:var(--good);">VALUE (Contenido):</strong> ${vid.value}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+selectQuery(0, null);
+
+/* ---------------- SLIDE 5: PIPELINE PASO A PASO ---------------- */
+let pipeStep = 0;
+let posSwapped = false;
+
+function setPipeStep(idx) {
+  pipeStep = idx;
+  document.querySelectorAll('#pipeTabs .pipe-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  renderPipeStage();
+}
+
+function togglePosOrder() {
+  posSwapped = !posSwapped;
+  renderPipeStage();
+}
+
+function renderPipeStage() {
+  const stage = document.getElementById('pipeStage');
+  let body = '';
+
+  if (pipeStep === 0) {
+    body = `
+      <div>
+        <h3 style="margin-bottom:6px;">✂️ 1. Tokenización: cortar en piezas</h3>
+        <p style="margin:0 0 14px; font-size:0.92rem; color:var(--muted);">La computadora no lee letras como tú; primero parte la frase en pedacitos (tokens) y le da un ID numérico a cada uno.</p>
+        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:12px;">
+          <span class="card" style="padding:10px 14px; font-weight:700;">"El perro ladra"</span>
+          <span style="font-size:1.3rem; font-weight:800; color:var(--primary);">→</span>
+          <div class="token-chip">El<span>ID: 104</span></div>
+          <div class="token-chip">perro<span>ID: 892</span></div>
+          <div class="token-chip">ladra<span>ID: 451</span></div>
+        </div>
+      </div>`;
+  } else if (pipeStep === 1) {
+    body = `
+      <div class="grid-2" style="align-items:center;">
+        <div>
+          <h3 style="margin-bottom:6px;">🗺️ 2. Embeddings: mapa de significados</h3>
+          <p style="margin:0; font-size:0.92rem; color:var(--muted);">Cada palabra recibe coordenadas. Palabras con ideas parecidas (<strong>perro</strong> y <strong>gato</strong>) viven cerquita en el mapa; cosas distintas (<strong>avión</strong>) viven lejos.</p>
+        </div>
+        <svg viewBox="0 0 300 145" style="width:100%; max-height:155px; background:var(--surface); border:1px solid var(--line); border-radius:12px;">
+          <line x1="25" y1="125" x2="280" y2="125" stroke="var(--line)" stroke-width="1.5"/>
+          <line x1="25" y1="15" x2="25" y2="125" stroke="var(--line)" stroke-width="1.5"/>
+          <circle cx="88" cy="48" r="32" fill="var(--primary-soft)" stroke="var(--primary)" stroke-dasharray="4 3"/>
+          <text x="88" y="92" text-anchor="middle" font-size="9" fill="var(--primary)" font-weight="700">Zona Animales</text>
+          <circle cx="75" cy="45" r="5" fill="var(--primary)"/><text x="84" y="48" font-size="11" font-weight="700" fill="var(--ink)">🐶 perro</text>
+          <circle cx="96" cy="62" r="5" fill="var(--cyan)"/><text x="105" y="65" font-size="11" font-weight="700" fill="var(--ink)">🐱 gato</text>
+          <circle cx="225" cy="34" r="5" fill="var(--amber)"/><text x="233" y="38" font-size="11" font-weight="700" fill="var(--ink)">✈️ avión</text>
+          <circle cx="215" cy="100" r="5" fill="var(--pink)"/><text x="223" y="104" font-size="11" font-weight="700" fill="var(--ink)">🍕 pizza</text>
+        </svg>
+      </div>`;
+  } else if (pipeStep === 2) {
+    const words = posSwapped ? ['Hombre', 'muerde', 'perro'] : ['Perro', 'muerde', 'hombre'];
+    const meaning = posSwapped ? '😱 ¡Noticia rara! Cambió quién hizo la acción.' : '🐶 Caso común. El orden dice quién muerde a quién.';
+    body = `
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+          <h3>🏷️ 3. Positional Encoding: etiqueta de turno</h3>
+          <button class="btn-soft" onclick="togglePosOrder()">🔀 Intercambiar orden</button>
+        </div>
+        <p style="margin:0 0 12px; font-size:0.92rem; color:var(--muted);">Como el Transformer lee todo a la vez, necesita etiquetas de posición (#1, #2, #3) para saber el orden real:</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+          ${words.map((w, i) => `<div class="token-chip">${w}<span>Posición #${i + 1}</span></div>`).join('')}
+          <span style="font-size:0.9rem; font-weight:700; margin-left:6px;">${meaning}</span>
+        </div>
+      </div>`;
+  } else if (pipeStep === 3) {
+    body = `
+      <div>
+        <h3 style="margin-bottom:6px;">🔗 4. Self-Attention: conectar el contexto</h3>
+        <p style="margin:0 0 12px; font-size:0.92rem; color:var(--muted);">Las palabras intercambian pistas con Q, K y V. Así <strong>"ladra"</strong> sabe exactamente quién está haciendo la acción:</p>
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+          <div class="token-chip" style="border-color:var(--muted);">El<span>Artículo</span></div>
+          <div class="token-chip" style="background:var(--primary-soft);">🐶 perro<span>Sujeto (88% conexión)</span></div>
+          <span style="font-weight:800; color:var(--primary);">⟵━━━━</span>
+          <div class="token-chip" style="background:var(--primary); color:#fff;">🔊 ladra<span style="color:#e0e7ff;">Verbo (pregunta ¿quién?)</span></div>
+        </div>
+      </div>`;
+  } else {
+    body = `
+      <div>
+        <h3 style="margin-bottom:6px;">🎯 5. Red Feed-Forward y Salida</h3>
+        <p style="margin:0 0 12px; font-size:0.92rem; color:var(--muted);">Una pequeña red neuronal afina todo lo entendido y calcula qué palabra es más probable que siga después de <strong>"El perro ladra..."</strong>:</p>
+        <div style="display:grid; gap:8px; max-width:460px;">
+          <div><div style="display:flex; justify-content:space-between; font-size:0.86rem; font-weight:700;"><span>"fuerte"</span><span>68%</span></div><div class="bar-track"><div class="bar-fill" style="width:68%"></div></div></div>
+          <div><div style="display:flex; justify-content:space-between; font-size:0.86rem; font-weight:700;"><span>"mucho"</span><span>21%</span></div><div class="bar-track"><div class="bar-fill" style="width:21%"></div></div></div>
+          <div><div style="display:flex; justify-content:space-between; font-size:0.86rem; font-weight:700;"><span>"alegre"</span><span>11%</span></div><div class="bar-track"><div class="bar-fill" style="width:11%"></div></div></div>
+        </div>
+      </div>`;
+  }
+
+  const nextAction = pipeStep < 4
+    ? `<button class="btn-soft" onclick="setPipeStep(${pipeStep + 1})">Siguiente paso (${pipeStep + 2}/5) →</button>`
+    : `<button class="btn-soft" onclick="setPipeStep(0)">↺ Volver al Paso 1</button>`;
+
+  stage.innerHTML = body + `<div style="display:flex; justify-content:flex-end;">${nextAction}</div>`;
+}
+renderPipeStage();
+
+/* ---------------- SLIDE 6: ENCODER VS DECODER ---------------- */
+const archModes = {
+  enc: {
+    input: '"¡Gana un premio gratis ya!"',
+    encLit: true,
+    decLit: false,
+    output: '🏷️ Etiqueta: ¡ES SPAM!',
+    title: 'Solo Encoder ("El Lector") — Ejemplo: BERT',
+    desc: 'Lee todo el texto completo de ida y vuelta para entenderlo a fondo. Ideal para clasificar correos (spam/no spam), analizar sentimientos o buscar respuestas exactas.',
+    canStream: false
+  },
+  dec: {
+    input: '"La IA aprende..."',
+    encLit: false,
+    decLit: true,
+    output: '"...muy rápido hoy."',
+    title: 'Solo Decoder ("El Escritor") — Ejemplos: ChatGPT, Gemini, Claude, LLaMA',
+    desc: 'Lee lo que llevas escrito y va generando la respuesta una palabra a la vez. Es la arquitectura favorita de los asistentes de chat y generación de código.',
+    canStream: true
+  },
+  both: {
+    input: '"Hola mundo"',
+    encLit: true,
+    decLit: true,
+    output: '"Hello world"',
+    title: 'Encoder + Decoder ("El Traductor") — Ejemplos: Transformer 2017, T5',
+    desc: 'El Encoder lee y entiende la frase completa en español; el Decoder toma ese mapa de ideas y la escribe en inglés paso a paso.',
+    canStream: false
+  }
+};
+
+let decTimer = null;
+
+function setArchMode(key, btn) {
+  if (decTimer) { clearInterval(decTimer); decTimer = null; }
+  if (btn) {
+    document.querySelectorAll('#archTabs .btn-soft').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const m = archModes[key];
+  document.getElementById('archDiagram').innerHTML = `
+    <div class="arch-box">
+      <small style="color:var(--muted); font-weight:700;">ENTRADA</small>
+      <div style="font-weight:700; margin-top:4px;">${m.input}</div>
+    </div>
+    <span class="arch-arrow">→</span>
+    <div class="arch-box ${m.encLit ? 'lit-enc' : 'off'}">
+      <small style="font-weight:700;">ENCODER</small>
+      <div style="font-weight:700; margin-top:4px;">🧠 Lee y comprende</div>
+    </div>
+    <span class="arch-arrow">→</span>
+    <div class="arch-box ${m.decLit ? 'lit-dec' : 'off'}">
+      <small style="font-weight:700;">DECODER</small>
+      <div style="font-weight:700; margin-top:4px;">✍️ Escribe palabra a palabra</div>
+    </div>
+    <span class="arch-arrow">→</span>
+    <div class="arch-box">
+      <small style="color:var(--muted); font-weight:700;">SALIDA</small>
+      <div style="font-weight:700; margin-top:4px;" id="archOutputText">${m.output}</div>
+    </div>
+  `;
+
+  document.getElementById('archInfo').innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div>
+        <h3 style="font-size:1.06rem; margin-bottom:4px;">${m.title}</h3>
+        <p style="margin:0; font-size:0.9rem; color:var(--muted);">${m.desc}</p>
+      </div>
+      ${m.canStream ? '<button class="btn-primary" onclick="animateDecoder()">▶ Ver escribir palabra por palabra</button>' : ''}
+    </div>
+  `;
+}
+
+function animateDecoder() {
+  if (decTimer) clearInterval(decTimer);
+  const out = document.getElementById('archOutputText');
+  const words = ['"muy"', '"muy rápido"', '"muy rápido y"', '"muy rápido y bien."'];
+  let i = 0;
+  out.textContent = '...';
+  decTimer = setInterval(() => {
+    out.textContent = words[i];
+    i++;
+    if (i >= words.length) {
+      clearInterval(decTimer);
+      decTimer = null;
+    }
+  }, 450);
+}
+setArchMode('enc', null);
+
+/* ---------------- SLIDE 7: MINI QUIZ ---------------- */
+const quizData = [
+  {
+    q: '1. ¿Cómo lee el Transformer una frase larga?',
+    opts: ['Palabra por palabra en fila', 'Todas las palabras a la vez (en paralelo)', 'Solo lee la última palabra'],
+    ans: 1,
+    ok: '¡Exacto! Por eso es súper rápido y no olvida el inicio.'
+  },
+  {
+    q: '2. En Q, K y V, ¿qué representa la Q (Query)?',
+    opts: ['Lo que buscas / preguntas', 'El orden de las palabras', 'La respuesta final'],
+    ans: 0,
+    ok: '¡Correcto! Q es tu consulta (como escribir en el buscador de YouTube).'
+  },
+  {
+    q: '3. ¿Qué parte usa principalmente ChatGPT o Gemini para responder?',
+    opts: ['Solo Tokenizer', 'Solo Decoder (genera palabra a palabra)', 'Ninguna'],
+    ans: 1,
+    ok: '¡Muy bien! De ahí viene la "T" (Transformer) y el modo generativo (Decoder).'
+  }
+];
+
+const quizState = new Array(quizData.length).fill(false);
+
+function renderQuiz() {
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = quizData.map((item, qi) => `
+    <div class="quiz-item" id="qItem${qi}">
+      <div class="quiz-q">${item.q}</div>
+      <div class="quiz-opts">
+        ${item.opts.map((opt, oi) => `<button class="quiz-opt" onclick="answerQuiz(${qi}, ${oi}, this)">${opt}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="qFb${qi}"></div>
+    </div>
+  `).join('');
+}
+
+function answerQuiz(qi, oi, btn) {
+  const item = quizData[qi];
+  const parent = document.getElementById('qItem' + qi);
+  const fb = document.getElementById('qFb' + qi);
+  const allBtns = Array.from(parent.querySelectorAll('.quiz-opt'));
+
+  allBtns.forEach(b => b.disabled = true);
+  if (oi === item.ans) {
+    btn.classList.add('correct');
+    fb.style.color = 'var(--good)';
+    fb.textContent = item.ok;
+    quizState[qi] = true;
+  } else {
+    btn.classList.add('wrong');
+    allBtns[item.ans].classList.add('correct');
+    fb.style.color = 'var(--bad)';
+    fb.textContent = 'Casi — la correcta está marcada en verde.';
+  }
+  const score = quizState.filter(Boolean).length;
+  document.getElementById('quizScore').textContent = score + ' / ' + quizData.length + (score === 3 ? ' 🏆' : '');
+}
+
+function resetQuiz() {
+  quizState.fill(false);
+  document.getElementById('quizScore').textContent = '0 / ' + quizData.length;
+  renderQuiz();
+}
+
+renderQuiz();
+
+const initHash = location.hash.match(/slide=(\d+)/);
+if (initHash) goToSlide(Number(initHash[1]) - 1);
+</script>
+</body>
+</html>
